@@ -20,6 +20,7 @@ class SuperAxeWeb {
         this.setupNavigation();
         await this.checkApiStatus();
         await this.loadExplorerData();
+        await this.loadPoolStats();
         this.startDataRefresh();
         this.animateElements();
         this.setupParallax();
@@ -114,6 +115,41 @@ class SuperAxeWeb {
             this.loadTransactions()
         ]);
         this.displayNetworkStats();
+    }
+
+    async loadPoolStats() {
+        try {
+            const response = await fetch('https://superaxepool.com/api/pool/axe');
+            if (!response.ok) throw new Error('Pool API error');
+            const data = await response.json();
+
+            // Update pool hashrate
+            const poolHashrateEl = document.getElementById('poolHashrate');
+            if (poolHashrateEl && data.hashrate !== undefined) {
+                poolHashrateEl.textContent = this.formatHashRate(data.hashrate);
+            }
+
+            // Update blocks found (confirmed blocks)
+            const poolBlocksEl = document.getElementById('poolBlocks');
+            if (poolBlocksEl && data.blocks) {
+                poolBlocksEl.textContent = data.blocks.confirmed || 0;
+            }
+
+            // Update miners count if element exists
+            const poolMinersEl = document.getElementById('poolMiners');
+            if (poolMinersEl && data.miners !== undefined) {
+                poolMinersEl.textContent = data.miners;
+            }
+
+            console.log('Pool stats loaded:', data);
+        } catch (error) {
+            console.warn('Failed to load pool stats:', error.message);
+            // Set fallback text
+            const poolHashrateEl = document.getElementById('poolHashrate');
+            const poolBlocksEl = document.getElementById('poolBlocks');
+            if (poolHashrateEl) poolHashrateEl.textContent = 'Offline';
+            if (poolBlocksEl) poolBlocksEl.textContent = '--';
+        }
     }
 
     async loadBlockchainInfo() {
@@ -355,6 +391,7 @@ class SuperAxeWeb {
         // Refresh data every 30 seconds
         setInterval(async () => {
             await this.loadExplorerData();
+            await this.loadPoolStats();
         }, 30000);
     }
 

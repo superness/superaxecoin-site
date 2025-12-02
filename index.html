@@ -361,30 +361,34 @@
                 </div>
 
                 <div class="mining-pools glass">
-                    <h3>Mining Pools</h3>
+                    <h3>SuperAxePool - Solo Mining</h3>
+                    <p style="margin-bottom: 1rem; opacity: 0.8;">Block rewards go directly to your wallet address. No payouts, no waiting - you mine it, you own it.</p>
+
                     <div class="pool-list">
-                        <div class="pool-item">
-                            <div class="pool-info">
-                                <div class="pool-name">SuperAxe Pool</div>
-                                <div class="pool-details">1% Fee | PPLNS | 99.9% Uptime</div>
+                        <div class="pool-item" style="flex-direction: column; align-items: flex-start;">
+                            <div class="pool-info" style="width: 100%; margin-bottom: 1rem;">
+                                <div class="pool-name">Stratum Connection</div>
+                                <code style="display: block; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.9rem;">
+                                    stratum+tcp://www.superaxepool.com:3350 -u YOUR_WALLET_ADDRESS
+                                </code>
                             </div>
-                            <div class="pool-hashrate">15.2 TH/s</div>
                         </div>
                         <div class="pool-item">
                             <div class="pool-info">
-                                <div class="pool-name">AXE Mining Pool</div>
-                                <div class="pool-details">0.5% Fee | PPS+ | Global Servers</div>
+                                <div class="pool-name">Pool Hashrate</div>
+                                <div class="pool-details">Live from SuperAxePool</div>
                             </div>
-                            <div class="pool-hashrate">8.7 TH/s</div>
+                            <div class="pool-hashrate" id="poolHashrate">--</div>
                         </div>
                         <div class="pool-item">
                             <div class="pool-info">
-                                <div class="pool-name">MineAXE.com</div>
-                                <div class="pool-details">2% Fee | Solo Mining Available</div>
+                                <div class="pool-name">Blocks Found</div>
+                                <div class="pool-details">Confirmed blocks</div>
                             </div>
-                            <div class="pool-hashrate">3.1 TH/s</div>
+                            <div class="pool-hashrate" id="poolBlocks">--</div>
                         </div>
                     </div>
+                    <a href="https://superaxepool.com/pool/axe" target="_blank" class="glass-btn" style="margin-top: 1rem; display: inline-block;">Visit SuperAxePool</a>
                 </div>
             </div>
         </div>
