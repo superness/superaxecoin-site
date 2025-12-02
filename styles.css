@@ -1602,6 +1602,18 @@ section {
     color: var(--white);
 }
 
+.education-content a {
+    color: var(--red-primary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--red-dark);
+    transition: all 0.2s ease;
+}
+
+.education-content a:hover {
+    color: var(--red-bright);
+    border-bottom-color: var(--red-bright);
+}
+
 .education-list {
     list-style: none;
     padding-left: 0;
