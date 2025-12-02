@@ -119,7 +119,8 @@ class SuperAxeWeb {
 
     async loadPoolStats() {
         try {
-            const response = await fetch('https://superaxepool.com/api/pool/axe');
+            // Use API proxy to bypass CORS
+            const response = await fetch(`${this.API_URL}/api/pool/stats`);
             if (!response.ok) throw new Error('Pool API error');
             const data = await response.json();
 
