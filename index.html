@@ -336,6 +336,13 @@
                         <input type="number" placeholder="Fee (AXE)" id="sendFee" value="0.00001">
                         <button class="send-tx-btn glass-btn" id="confirmSend">Send Transaction</button>
                     </div>
+
+                    <div class="transaction-history glass" id="historyPanel" style="display: none;">
+                        <h4>Transaction History</h4>
+                        <div class="history-list" id="historyList">
+                            <div class="history-loading">Loading transactions...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

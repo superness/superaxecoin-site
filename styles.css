@@ -1299,6 +1299,119 @@ section {
     text-transform: uppercase;
 }
 
+/* Transaction History */
+.transaction-history {
+    padding: 2rem;
+    margin-top: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    border: var(--border-harsh);
+    background: var(--dark-2);
+}
+
+.transaction-history h4 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.history-list {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.history-loading,
+.history-empty,
+.history-error {
+    text-align: center;
+    padding: 2rem;
+    color: var(--white-50);
+}
+
+.history-error {
+    color: var(--error);
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: var(--dark-1);
+    border-left: 3px solid var(--white-20);
+    transition: background 0.2s;
+}
+
+.history-item:hover {
+    background: var(--dark-3);
+}
+
+.history-item.received {
+    border-left-color: var(--success);
+}
+
+.history-item.sent {
+    border-left-color: var(--error);
+}
+
+.tx-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--dark-3);
+}
+
+.history-item.received .tx-icon {
+    color: var(--success);
+}
+
+.history-item.sent .tx-icon {
+    color: var(--error);
+}
+
+.tx-details {
+    flex: 1;
+}
+
+.tx-type {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.tx-id {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: var(--white-50);
+    cursor: pointer;
+}
+
+.tx-date {
+    font-size: 0.75rem;
+    color: var(--white-50);
+}
+
+.tx-amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    text-align: right;
+}
+
+.tx-amount.positive {
+    color: var(--success);
+}
+
+.tx-amount.negative {
+    color: var(--error);
+}
+
 /* Mining */
 .mining-section {
     background: var(--black);

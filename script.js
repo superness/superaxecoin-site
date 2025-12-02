@@ -692,6 +692,11 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
 
     showSendForm() {
         const sendForm = document.getElementById('sendForm');
+        const historyPanel = document.getElementById('historyPanel');
+
+        // Hide history panel if open
+        if (historyPanel) historyPanel.style.display = 'none';
+
         if (sendForm) {
             sendForm.style.display = sendForm.style.display === 'none' ? 'block' : 'none';
         }
@@ -710,12 +715,68 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
         }
     }
 
-    showTransactionHistory() {
+    async showTransactionHistory() {
         if (!this.apiAvailable) {
             this.showNotification('Transaction history requires API connection', 'warning');
             return;
         }
-        this.showNotification('Transaction history feature coming soon!', 'info');
+
+        if (!this.currentWalletAddress) {
+            this.showNotification('Please create or load a wallet first', 'warning');
+            return;
+        }
+
+        const historyPanel = document.getElementById('historyPanel');
+        const historyList = document.getElementById('historyList');
+        const sendForm = document.getElementById('sendForm');
+
+        // Toggle visibility
+        if (historyPanel.style.display === 'block') {
+            historyPanel.style.display = 'none';
+            return;
+        }
+
+        // Hide send form if open
+        if (sendForm) sendForm.style.display = 'none';
+
+        // Show history panel with loading state
+        historyPanel.style.display = 'block';
+        historyList.innerHTML = '<div class="history-loading">Loading transactions...</div>';
+
+        try {
+            const data = await this.apiCall(`/api/address/${this.currentWalletAddress}`);
+
+            if (!data.transactions || data.transactions.length === 0) {
+                historyList.innerHTML = '<div class="history-empty">No transactions yet</div>';
+                return;
+            }
+
+            // Render transactions
+            historyList.innerHTML = data.transactions.slice(0, 20).map(tx => {
+                const isSent = tx.is_input;
+                const amount = (tx.value / 100000000).toFixed(8);
+                const date = tx.block_time ? new Date(tx.block_time * 1000).toLocaleDateString() : 'Pending';
+                const txidShort = tx.txid.substring(0, 12) + '...';
+
+                return `
+                    <div class="history-item ${isSent ? 'sent' : 'received'}">
+                        <div class="tx-icon">${isSent ? '↑' : '↓'}</div>
+                        <div class="tx-details">
+                            <div class="tx-type">${isSent ? 'Sent' : 'Received'}</div>
+                            <div class="tx-id" title="${tx.txid}">${txidShort}</div>
+                            <div class="tx-date">${date}</div>
+                        </div>
+                        <div class="tx-amount ${isSent ? 'negative' : 'positive'}">
+                            ${isSent ? '-' : '+'}${amount} AXE
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            historyList.innerHTML = '<div class="history-error">Failed to load transactions</div>';
+        }
     }
 
     async sendTransaction() {
@@ -732,8 +793,8 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             return;
         }
 
-        // Validate address format
-        if (!/^[X7][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(recipient)) {
+        // Validate address format (S=P2PKH, X=P2SH)
+        if (!/^[SX][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(recipient)) {
             this.showNotification('Invalid SuperAxeCoin address format', 'error');
             return;
         }
