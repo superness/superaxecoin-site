@@ -1,9 +1,8 @@
 // SuperAxeCoin Website JavaScript
 class SuperAxeWeb {
     constructor() {
-        // API Configuration - update this to your API server URL
-        this.API_URL = 'https://api.superaxecoin.com'; // Production API
-        // this.API_URL = 'http://localhost:3001'; // Development API
+        // API Configuration
+        this.API_URL = 'https://api.superaxecoin.org';
 
         this.walletConnected = false;
         this.currentTab = 'blocks';
