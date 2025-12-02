@@ -64,6 +64,7 @@ class SuperAxeWeb {
         // Wallet connection
         document.getElementById('connectWallet')?.addEventListener('click', this.connectWallet.bind(this));
         document.getElementById('webWalletConnect')?.addEventListener('click', this.createWebWallet.bind(this));
+        document.getElementById('createWebWalletBtn')?.addEventListener('click', this.createWebWallet.bind(this));
 
         // Wallet actions
         document.getElementById('sendBtn')?.addEventListener('click', () => this.showSendForm());
