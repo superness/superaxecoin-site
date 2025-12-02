@@ -1389,6 +1389,7 @@ section {
     background: var(--black);
     border: var(--border-subtle);
     border-top: none;
+    border-left: 4px solid transparent;
 }
 
 .pool-item:first-child {
