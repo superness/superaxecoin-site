@@ -62,7 +62,7 @@ class SuperAxeWeb {
         mobileToggle?.addEventListener('click', this.toggleMobileMenu.bind(this));
 
         // Wallet connection
-        document.getElementById('connectWallet')?.addEventListener('click', this.connectWallet.bind(this));
+        // Connect Wallet button removed - MetaMask doesn't work with Bitcoin-based chains
         document.getElementById('webWalletConnect')?.addEventListener('click', this.createWebWallet.bind(this));
         document.getElementById('createWebWalletBtn')?.addEventListener('click', this.createWebWallet.bind(this));
 
@@ -499,24 +499,6 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
         }
     }
 
-    async connectWallet() {
-        const btn = document.getElementById('connectWallet');
-        const originalText = btn.textContent;
-
-        btn.textContent = 'Connecting...';
-        btn.disabled = true;
-
-        try {
-            await this.sleep(1000);
-            this.showWalletOptions();
-        } catch (error) {
-            this.showNotification('Failed to connect wallet', 'error');
-        } finally {
-            btn.textContent = originalText;
-            btn.disabled = false;
-        }
-    }
-
     async createWebWallet() {
         const btn = document.getElementById('createWebWalletBtn') || document.getElementById('webWalletConnect');
         const originalText = btn ? btn.textContent : '';
@@ -930,10 +912,6 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             case 'warning': return '#facc15';
             default: return '#667eea';
         }
-    }
-
-    showWalletOptions() {
-        this.showNotification('Download SuperAxeCoin Wallet for the best experience, or create a demo web wallet below.', 'info');
     }
 
     formatTime(timestamp) {

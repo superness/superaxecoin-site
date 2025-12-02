@@ -24,7 +24,6 @@
                 <a href="#wallet" class="nav-link">Wallet</a>
                 <a href="#mining" class="nav-link">Mining</a>
                 <a href="#about" class="nav-link">About</a>
-                <button class="wallet-connect-btn glass-btn" id="connectWallet">Connect Wallet</button>
             </div>
             <div class="mobile-menu-toggle" id="mobileToggle">
                 <span></span>
@@ -408,6 +407,403 @@
                         </div>
                     </div>
                     <a href="https://superaxepool.com/pool/axe" target="_blank" class="glass-btn" style="margin-top: 1rem; display: inline-block;">Visit SuperAxePool</a>
+                </div>
+            </div>
+
+            <!-- Mining Education Section -->
+            <div class="mining-education">
+                <h3 class="education-title gradient-text">Learn About Cryptocurrency Mining</h3>
+
+                <!-- What is Mining -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#9881;</span>
+                        <h4>What is Cryptocurrency Mining?</h4>
+                    </div>
+                    <div class="education-content">
+                        <p>
+                            Mining is the process of validating transactions and adding new blocks to the blockchain.
+                            Miners compete to solve a complex mathematical puzzle - whoever solves it first gets to
+                            add the next block and receive the <strong>block reward</strong> (currently 500 AXE).
+                        </p>
+                        <div class="info-box">
+                            <strong>Think of it like a lottery:</strong> Your mining hardware makes billions of
+                            guesses per second. The more guesses you can make (higher hashrate), the better your
+                            chances of finding a valid block.
+                        </div>
+                        <p>
+                            Mining serves two critical purposes:
+                        </p>
+                        <ul class="education-list">
+                            <li><strong>Security:</strong> Makes it extremely expensive to attack or manipulate the network</li>
+                            <li><strong>Coin Distribution:</strong> New coins are created and distributed to miners as rewards</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- How SHA256 Works -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#128274;</span>
+                        <h4>How SHA256 Mining Works</h4>
+                    </div>
+                    <div class="education-content">
+                        <p>
+                            SuperAxeCoin uses the <strong>SHA256</strong> algorithm - the same algorithm used by Bitcoin.
+                            This means any SHA256 mining hardware works for both chains.
+                        </p>
+                        <div class="technical-breakdown">
+                            <h5>The Mining Process:</h5>
+                            <ol class="numbered-list">
+                                <li>
+                                    <strong>Gather Transactions:</strong> Collect pending transactions from the mempool
+                                </li>
+                                <li>
+                                    <strong>Build Block Header:</strong> Combine previous block hash + merkle root + timestamp + nonce
+                                </li>
+                                <li>
+                                    <strong>Hash the Header:</strong> Apply SHA256 twice (double-SHA256) to the block header
+                                </li>
+                                <li>
+                                    <strong>Check Difficulty:</strong> If the hash is below the target difficulty, you found a block!
+                                </li>
+                                <li>
+                                    <strong>Increment Nonce:</strong> If not valid, change the nonce and try again (billions of times per second)
+                                </li>
+                            </ol>
+                        </div>
+                        <div class="code-example">
+                            <div class="code-header">Example: What miners are looking for</div>
+                            <code>
+Target: 00000000000000000007a4... (hash must start with many zeros)<br>
+Miner tries nonce=1: 8f4a2b... (invalid - doesn't start with zeros)<br>
+Miner tries nonce=2: 3c7d9e... (invalid)<br>
+... billions of attempts ...<br>
+Miner tries nonce=847291: 00000000000000000004f2... (VALID! Block found!)
+                            </code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mining Hardware -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#128187;</span>
+                        <h4>Mining Hardware Options</h4>
+                    </div>
+                    <div class="education-content">
+                        <p>
+                            SHA256 mining has evolved significantly. Here's what you need to know about different hardware options:
+                        </p>
+
+                        <div class="hardware-comparison">
+                            <div class="hardware-option">
+                                <div class="hardware-header bad">
+                                    <span class="hardware-icon">&#128421;</span>
+                                    <h5>CPU Mining</h5>
+                                    <span class="viability-badge">Not Viable</span>
+                                </div>
+                                <p>Your computer's processor. Maybe 10-50 MH/s on a good day.</p>
+                                <ul>
+                                    <li>Free to try (you already own it)</li>
+                                    <li>Will never find a block on mainnet</li>
+                                    <li>Good for learning on testnet/regtest</li>
+                                </ul>
+                            </div>
+
+                            <div class="hardware-option">
+                                <div class="hardware-header okay">
+                                    <span class="hardware-icon">&#127918;</span>
+                                    <h5>GPU Mining</h5>
+                                    <span class="viability-badge">Educational</span>
+                                </div>
+                                <p>Graphics cards. About 200-500 MH/s for SHA256.</p>
+                                <ul>
+                                    <li>Better than CPU, but still outclassed</li>
+                                    <li>High electricity costs vs rewards</li>
+                                    <li>Better suited for other algorithms (Ethash, etc.)</li>
+                                </ul>
+                            </div>
+
+                            <div class="hardware-option">
+                                <div class="hardware-header good">
+                                    <span class="hardware-icon">&#9889;</span>
+                                    <h5>ASIC Mining</h5>
+                                    <span class="viability-badge">Recommended</span>
+                                </div>
+                                <p>Specialized chips built ONLY for SHA256. 100+ TH/s!</p>
+                                <ul>
+                                    <li>Millions of times faster than GPUs</li>
+                                    <li>Most efficient power consumption</li>
+                                    <li>Required for serious mining</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="info-box warning">
+                            <strong>Reality Check:</strong> SHA256 mining is dominated by industrial-scale operations
+                            with thousands of ASICs. SuperAxeCoin's low difficulty makes it more accessible, but
+                            without ASIC hardware, mining is primarily educational.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solo vs Pool Mining -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#128101;</span>
+                        <h4>Solo Mining vs Pool Mining</h4>
+                    </div>
+                    <div class="education-content">
+                        <div class="comparison-cards">
+                            <div class="compare-card">
+                                <h5>Solo Mining</h5>
+                                <p>You mine independently. If you find a block, you keep the entire 500 AXE reward.</p>
+                                <div class="pros-cons">
+                                    <div class="pros">
+                                        <strong>Pros:</strong>
+                                        <ul>
+                                            <li>Keep 100% of block rewards</li>
+                                            <li>No pool fees</li>
+                                            <li>Complete independence</li>
+                                        </ul>
+                                    </div>
+                                    <div class="cons">
+                                        <strong>Cons:</strong>
+                                        <ul>
+                                            <li>Irregular, unpredictable income</li>
+                                            <li>May go weeks/months without finding a block</li>
+                                            <li>Need significant hashpower</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="compare-card">
+                                <h5>Pool Mining</h5>
+                                <p>Combine hashpower with other miners. Rewards are split proportionally.</p>
+                                <div class="pros-cons">
+                                    <div class="pros">
+                                        <strong>Pros:</strong>
+                                        <ul>
+                                            <li>Regular, predictable payouts</li>
+                                            <li>Start earning immediately</li>
+                                            <li>Lower variance</li>
+                                        </ul>
+                                    </div>
+                                    <div class="cons">
+                                        <strong>Cons:</strong>
+                                        <ul>
+                                            <li>Pool takes a fee (usually 1-2%)</li>
+                                            <li>Rewards split among all miners</li>
+                                            <li>Depends on pool reliability</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <strong>SuperAxePool is Solo-Style:</strong> Unlike traditional pools, SuperAxePool sends
+                            full block rewards directly to your wallet address. You're solo mining through their
+                            stratum server - no splitting, no waiting for payouts.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Understanding Difficulty -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#128200;</span>
+                        <h4>Understanding Difficulty & Hashrate</h4>
+                    </div>
+                    <div class="education-content">
+                        <div class="concept-grid">
+                            <div class="concept">
+                                <h5>Hashrate</h5>
+                                <p>
+                                    The number of hash calculations your miner can perform per second.
+                                    Measured in H/s, KH/s (thousands), MH/s (millions), GH/s (billions),
+                                    TH/s (trillions), or PH/s (quadrillions).
+                                </p>
+                                <div class="scale-visual">
+                                    <span>1 KH/s = 1,000 H/s</span>
+                                    <span>1 MH/s = 1,000 KH/s</span>
+                                    <span>1 GH/s = 1,000 MH/s</span>
+                                    <span>1 TH/s = 1,000 GH/s</span>
+                                </div>
+                            </div>
+
+                            <div class="concept">
+                                <h5>Difficulty</h5>
+                                <p>
+                                    A measure of how hard it is to find a valid block. Higher difficulty means
+                                    more hashes are needed on average to find a block.
+                                </p>
+                                <p>
+                                    SuperAxeCoin uses <strong>LWMA (Linear Weighted Moving Average)</strong>
+                                    difficulty adjustment - it recalculates every single block based on recent
+                                    block times. This prevents the wild swings seen in coins with longer adjustment periods.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="formula-box">
+                            <h5>Estimated Time to Find a Block:</h5>
+                            <code>Time = (Difficulty × 2^32) / Your_Hashrate</code>
+                            <p class="formula-note">
+                                Example: With difficulty 1000 and 1 TH/s hashrate:<br>
+                                (1000 × 4,294,967,296) / 1,000,000,000,000 = ~4.3 seconds average
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Guide -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#128295;</span>
+                        <h4>Step-by-Step Mining Setup Guide</h4>
+                    </div>
+                    <div class="education-content">
+                        <div class="setup-steps">
+                            <div class="setup-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h5>Get a Wallet Address</h5>
+                                    <p>
+                                        You need a SuperAxeCoin address to receive mining rewards. Options:
+                                    </p>
+                                    <ul>
+                                        <li><strong>Desktop Wallet:</strong> Download from our releases page (recommended)</li>
+                                        <li><strong>Web Wallet:</strong> Create one instantly in the Wallet section above</li>
+                                        <li><strong>CLI:</strong> Use <code>superaxecoin-cli getnewaddress</code></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="setup-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h5>Choose Your Mining Software</h5>
+                                    <p>For SHA256 ASIC miners, popular options include:</p>
+                                    <ul>
+                                        <li><strong>CGMiner:</strong> Classic, widely compatible</li>
+                                        <li><strong>BFGMiner:</strong> Modular, lots of features</li>
+                                        <li><strong>Built-in Firmware:</strong> Most ASICs come with mining software</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="setup-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h5>Configure Your Miner</h5>
+                                    <p>Point your miner to SuperAxePool with these settings:</p>
+                                    <div class="config-example">
+                                        <code>
+Pool URL: stratum+tcp://www.superaxepool.com:3350<br>
+Username: YOUR_WALLET_ADDRESS<br>
+Password: x (or anything)
+                                        </code>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setup-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h5>Start Mining!</h5>
+                                    <p>
+                                        Launch your mining software and watch the shares roll in.
+                                        When you find a block, the full 500 AXE reward goes directly to your wallet.
+                                    </p>
+                                    <p>
+                                        Monitor your mining on <a href="https://superaxepool.com" target="_blank">SuperAxePool.com</a> -
+                                        enter your wallet address to see your hashrate and any blocks you've found.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-box tip">
+                            <strong>Learning Tip:</strong> Want to experiment without real hardware?
+                            Run SuperAxeCoin in <code>regtest</code> mode and use the built-in
+                            <code>generatetoaddress</code> command to simulate mining instantly!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Block Rewards & Halving -->
+                <div class="education-card glass">
+                    <div class="education-header">
+                        <span class="education-icon">&#127873;</span>
+                        <h4>Block Rewards & Halving</h4>
+                    </div>
+                    <div class="education-content">
+                        <p>
+                            Mining rewards decrease over time through a process called "halving." This controls
+                            the total supply and creates scarcity.
+                        </p>
+
+                        <div class="halving-schedule">
+                            <h5>SuperAxeCoin Halving Schedule:</h5>
+                            <table class="halving-table">
+                                <thead>
+                                    <tr>
+                                        <th>Era</th>
+                                        <th>Block Range</th>
+                                        <th>Reward</th>
+                                        <th>Total Coins Mined</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="current-era">
+                                        <td>1 (Current)</td>
+                                        <td>0 - 210,000</td>
+                                        <td>500 AXE</td>
+                                        <td>105,000,000 AXE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>210,001 - 420,000</td>
+                                        <td>250 AXE</td>
+                                        <td>157,500,000 AXE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>420,001 - 630,000</td>
+                                        <td>125 AXE</td>
+                                        <td>183,750,000 AXE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>630,001 - 840,000</td>
+                                        <td>62.5 AXE</td>
+                                        <td>196,875,000 AXE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>...</td>
+                                        <td>...</td>
+                                        <td>...</td>
+                                        <td>...</td>
+                                    </tr>
+                                    <tr class="final-era">
+                                        <td>Final</td>
+                                        <td>~2,100,000+</td>
+                                        <td>0 AXE</td>
+                                        <td>210,000,000 AXE (max)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="info-box">
+                            <strong>Why Halving Matters:</strong> With 2-minute blocks, each halving occurs
+                            approximately every 292 days (~10 months). Early miners receive the highest rewards,
+                            incentivizing early adoption and network security.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

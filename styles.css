@@ -1541,6 +1541,577 @@ section {
     font-family: 'Courier New', monospace;
 }
 
+/* Mining Education Section */
+.mining-education {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: var(--border-harsh);
+}
+
+.education-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+}
+
+.education-card {
+    padding: 2rem;
+    margin-bottom: 2rem;
+    background: var(--dark-2);
+    border: var(--border-subtle);
+    border-left: 4px solid var(--red-primary);
+}
+
+.education-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.education-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--red-dark);
+    border-radius: 8px;
+}
+
+.education-header h4 {
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--white);
+}
+
+.education-content {
+    color: var(--white-70);
+    line-height: 1.8;
+}
+
+.education-content p {
+    margin-bottom: 1rem;
+}
+
+.education-content strong {
+    color: var(--white);
+}
+
+.education-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 1rem 0;
+}
+
+.education-list li {
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    position: relative;
+}
+
+.education-list li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--red-primary);
+    font-weight: bold;
+}
+
+.info-box {
+    background: var(--dark-3);
+    border: var(--border-subtle);
+    border-left: 4px solid var(--red-primary);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+}
+
+.info-box.warning {
+    border-left-color: var(--warning);
+}
+
+.info-box.tip {
+    border-left-color: var(--success);
+}
+
+.info-box strong {
+    color: var(--red-primary);
+    display: block;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+.info-box.warning strong {
+    color: var(--warning);
+}
+
+.info-box.tip strong {
+    color: var(--success);
+}
+
+/* Technical Breakdown */
+.technical-breakdown {
+    background: var(--black);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: var(--border-subtle);
+}
+
+.technical-breakdown h5 {
+    color: var(--red-primary);
+    text-transform: uppercase;
+    font-weight: 900;
+    margin-bottom: 1rem;
+}
+
+.numbered-list {
+    counter-reset: step-counter;
+    list-style: none;
+    padding-left: 0;
+}
+
+.numbered-list li {
+    counter-increment: step-counter;
+    padding: 0.75rem 0 0.75rem 3rem;
+    position: relative;
+    border-bottom: var(--border-subtle);
+}
+
+.numbered-list li:last-child {
+    border-bottom: none;
+}
+
+.numbered-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background: var(--red-dark);
+    color: var(--white);
+    text-align: center;
+    line-height: 24px;
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+/* Code Examples */
+.code-example {
+    margin: 1.5rem 0;
+    border: var(--border-subtle);
+    background: var(--black);
+    overflow: hidden;
+}
+
+.code-header {
+    background: var(--red-dark);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.code-example code {
+    display: block;
+    padding: 1.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--white-70);
+    overflow-x: auto;
+}
+
+/* Hardware Comparison */
+.hardware-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.hardware-option {
+    background: var(--black);
+    border: var(--border-subtle);
+    padding: 1.5rem;
+}
+
+.hardware-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: var(--border-subtle);
+}
+
+.hardware-header h5 {
+    flex: 1;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.hardware-icon {
+    font-size: 1.5rem;
+}
+
+.viability-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    text-transform: uppercase;
+    font-weight: 900;
+    background: var(--dark-3);
+    color: var(--white-50);
+}
+
+.hardware-header.bad .viability-badge {
+    background: var(--error);
+    color: var(--white);
+}
+
+.hardware-header.okay .viability-badge {
+    background: var(--warning);
+    color: var(--black);
+}
+
+.hardware-header.good .viability-badge {
+    background: var(--success);
+    color: var(--white);
+}
+
+.hardware-option ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.hardware-option ul li {
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+    color: var(--white-50);
+    padding-left: 1rem;
+    position: relative;
+}
+
+.hardware-option ul li::before {
+    content: '-';
+    position: absolute;
+    left: 0;
+    color: var(--red-primary);
+}
+
+/* Comparison Cards (Solo vs Pool) */
+.comparison-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.compare-card {
+    background: var(--black);
+    border: var(--border-subtle);
+    padding: 1.5rem;
+}
+
+.compare-card h5 {
+    font-size: 1.1rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--red-primary);
+    margin-bottom: 0.75rem;
+}
+
+.compare-card > p {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: var(--border-subtle);
+}
+
+.pros-cons {
+    display: grid;
+    gap: 1rem;
+}
+
+.pros strong,
+.cons strong {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.pros strong {
+    color: var(--success);
+}
+
+.cons strong {
+    color: var(--error);
+}
+
+.pros ul,
+.cons ul {
+    list-style: none;
+    padding: 0;
+}
+
+.pros ul li,
+.cons ul li {
+    padding: 0.3rem 0 0.3rem 1rem;
+    font-size: 0.85rem;
+    position: relative;
+}
+
+.pros ul li::before {
+    content: '+';
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: bold;
+}
+
+.cons ul li::before {
+    content: '-';
+    position: absolute;
+    left: 0;
+    color: var(--error);
+    font-weight: bold;
+}
+
+/* Concept Grid (Hashrate/Difficulty) */
+.concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.concept {
+    background: var(--black);
+    border: var(--border-subtle);
+    padding: 1.5rem;
+}
+
+.concept h5 {
+    color: var(--red-primary);
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.scale-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.scale-visual span {
+    padding: 0.5rem;
+    background: var(--dark-3);
+    border-left: 3px solid var(--red-primary);
+}
+
+/* Formula Box */
+.formula-box {
+    background: var(--dark-3);
+    border: var(--border-subtle);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.formula-box h5 {
+    color: var(--red-primary);
+    text-transform: uppercase;
+    font-weight: 900;
+    margin-bottom: 1rem;
+}
+
+.formula-box code {
+    display: block;
+    font-size: 1.1rem;
+    padding: 1rem;
+    background: var(--black);
+    border: var(--border-subtle);
+    font-family: 'Courier New', monospace;
+    color: var(--white);
+}
+
+.formula-note {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--white-50);
+}
+
+/* Setup Steps */
+.setup-steps {
+    margin: 1.5rem 0;
+}
+
+.setup-step {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: var(--border-subtle);
+}
+
+.setup-step:last-child {
+    border-bottom: none;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--red-dark);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.step-content h5 {
+    color: var(--white);
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.step-content ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.75rem;
+}
+
+.step-content ul li {
+    padding: 0.3rem 0 0.3rem 1rem;
+    position: relative;
+}
+
+.step-content ul li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--red-primary);
+}
+
+.step-content code {
+    background: var(--dark-3);
+    padding: 2px 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.config-example {
+    margin-top: 1rem;
+    background: var(--black);
+    border: var(--border-subtle);
+}
+
+.config-example code {
+    display: block;
+    padding: 1rem;
+    line-height: 1.8;
+    background: transparent;
+}
+
+/* Halving Table */
+.halving-schedule {
+    margin: 1.5rem 0;
+}
+
+.halving-schedule h5 {
+    color: var(--red-primary);
+    text-transform: uppercase;
+    font-weight: 900;
+    margin-bottom: 1rem;
+}
+
+.halving-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+}
+
+.halving-table th,
+.halving-table td {
+    padding: 12px;
+    text-align: left;
+    border: var(--border-subtle);
+}
+
+.halving-table th {
+    background: var(--red-dark);
+    color: var(--white);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.halving-table td {
+    background: var(--black);
+    color: var(--white-70);
+}
+
+.halving-table .current-era td {
+    background: var(--dark-3);
+    color: var(--white);
+    border-left: 4px solid var(--success);
+}
+
+.halving-table .final-era td {
+    color: var(--white-50);
+    font-style: italic;
+}
+
+/* Responsive Mining Education */
+@media (max-width: 768px) {
+    .education-card {
+        padding: 1.5rem;
+    }
+
+    .education-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hardware-comparison,
+    .comparison-cards,
+    .concept-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .setup-step {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .step-number {
+        margin: 0 auto;
+    }
+
+    .halving-table {
+        font-size: 0.8rem;
+    }
+
+    .halving-table th,
+    .halving-table td {
+        padding: 8px 6px;
+    }
+}
+
 /* About */
 .about-section {
     background: var(--dark-1);
