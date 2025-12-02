@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperAxeCoin - Mining for the Rest of Us</title>
+    <meta name="description" content="SuperAxeCoin (AXE) - Next-generation cryptocurrency with 5x faster transactions, stable mining, and modern cryptography from genesis">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="nav-container">
+            <a href="#home" class="nav-logo">
+                <img src="logo.png" alt="SuperAxeCoin" class="logo-img">
+                <span class="logo-text">SuperAxeCoin</span>
+            </a>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#explorer" class="nav-link">Explorer</a>
+                <a href="#wallet" class="nav-link">Wallet</a>
+                <a href="#mining" class="nav-link">Mining</a>
+                <a href="#about" class="nav-link">About</a>
+                <button class="wallet-connect-btn glass-btn" id="connectWallet">Connect Wallet</button>
+            </div>
+            <div class="mobile-menu-toggle" id="mobileToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- EPIC HERO SECTION - Multi-layer Parallax -->
+    <section id="home" class="hero">
+        <!-- Layer 1: Deep background grid -->
+        <div class="parallax-layer layer-1"></div>
+
+        <!-- Layer 2: Diagonal slashes -->
+        <div class="parallax-layer layer-2"></div>
+
+        <!-- Layer 3: Floating geometric shapes -->
+        <div class="parallax-layer layer-3">
+            <div class="geo-shape shape-1"></div>
+            <div class="geo-shape shape-2"></div>
+            <div class="geo-shape shape-3"></div>
+            <div class="geo-shape shape-4"></div>
+            <div class="geo-shape shape-5"></div>
+            <div class="geo-shape shape-6"></div>
+        </div>
+
+        <!-- Layer 4: Giant background logo watermark -->
+        <div class="parallax-layer layer-4">
+            <img src="logo.png" alt="" class="hero-watermark-logo">
+        </div>
+
+        <!-- Layer 5: Glitch lines -->
+        <div class="parallax-layer layer-5">
+            <div class="glitch-line line-1"></div>
+            <div class="glitch-line line-2"></div>
+            <div class="glitch-line line-3"></div>
+        </div>
+
+        <!-- Layer 6: Red glow orbs -->
+        <div class="parallax-layer layer-6">
+            <div class="glow-orb orb-1"></div>
+            <div class="glow-orb orb-2"></div>
+            <div class="glow-orb orb-3"></div>
+        </div>
+
+        <!-- Main Hero Content -->
+        <div class="hero-content">
+            <!-- Massive animated logo -->
+            <div class="hero-logo-container">
+                <img src="logo.png" alt="SuperAxeCoin" class="hero-main-logo">
+                <div class="logo-glow"></div>
+                <div class="logo-ring ring-1"></div>
+                <div class="logo-ring ring-2"></div>
+                <div class="logo-ring ring-3"></div>
+            </div>
+
+            <h1 class="hero-title">
+                <span class="title-line line-1">
+                    <span class="char" style="--delay: 0">S</span>
+                    <span class="char" style="--delay: 1">U</span>
+                    <span class="char" style="--delay: 2">P</span>
+                    <span class="char" style="--delay: 3">E</span>
+                    <span class="char" style="--delay: 4">R</span>
+                </span>
+                <span class="title-line line-2">
+                    <span class="char accent" style="--delay: 5">A</span>
+                    <span class="char accent" style="--delay: 6">X</span>
+                    <span class="char accent" style="--delay: 7">E</span>
+                </span>
+                <span class="title-line line-3">
+                    <span class="char" style="--delay: 8">C</span>
+                    <span class="char" style="--delay: 9">O</span>
+                    <span class="char" style="--delay: 10">I</span>
+                    <span class="char" style="--delay: 11">N</span>
+                </span>
+            </h1>
+
+            <div class="hero-tagline">
+                <span class="tagline-decoration left"></span>
+                <span class="tagline-text">MINING FOR THE REST OF US</span>
+                <span class="tagline-decoration right"></span>
+            </div>
+
+            <p class="hero-description">
+                Next-generation cryptocurrency with <strong>5x faster</strong> transactions,
+                stable LWMA mining, and all modern Bitcoin features active from genesis
+            </p>
+
+            <!-- Massive stats display -->
+            <div class="hero-stats-mega">
+                <div class="mega-stat">
+                    <div class="mega-stat-value" id="blockHeight">0</div>
+                    <div class="mega-stat-bar"></div>
+                    <div class="mega-stat-label">BLOCK HEIGHT</div>
+                </div>
+                <div class="mega-stat">
+                    <div class="mega-stat-value" id="hashRate">0 H/s</div>
+                    <div class="mega-stat-bar"></div>
+                    <div class="mega-stat-label">NETWORK HASH</div>
+                </div>
+                <div class="mega-stat">
+                    <div class="mega-stat-value">2 MIN</div>
+                    <div class="mega-stat-bar"></div>
+                    <div class="mega-stat-label">BLOCK TIME</div>
+                </div>
+                <div class="mega-stat">
+                    <div class="mega-stat-value">500 AXE</div>
+                    <div class="mega-stat-bar"></div>
+                    <div class="mega-stat-label">BLOCK REWARD</div>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <button class="cta-mega primary" onclick="scrollToSection('wallet')">
+                    <span class="cta-bg"></span>
+                    <span class="cta-text">GET STARTED</span>
+                    <span class="cta-arrow">→</span>
+                </button>
+                <button class="cta-mega secondary" onclick="scrollToSection('explorer')">
+                    <span class="cta-bg"></span>
+                    <span class="cta-text">EXPLORE CHAIN</span>
+                    <span class="cta-arrow">→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="scroll-indicator">
+            <div class="scroll-line"></div>
+            <span class="scroll-text">SCROLL</span>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title gradient-text">Why SuperAxeCoin?</h2>
+            <div class="features-grid">
+                <div class="feature-card glass">
+                    <div class="feature-icon">⛏️</div>
+                    <h3>Mine For Fun</h3>
+                    <p>2-minute blocks mean you see results fast. Perfect for learning and experimenting.</p>
+                </div>
+                <div class="feature-card glass">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Learn Bitcoin</h3>
+                    <p>Built on Bitcoin Core with all modern features. Real blockchain skills that transfer.</p>
+                </div>
+                <div class="feature-card glass">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Tinker Friendly</h3>
+                    <p>Testnet and regtest modes included. Break things, learn things, have fun.</p>
+                </div>
+                <div class="feature-card glass">
+                    <div class="feature-icon">💻</div>
+                    <h3>100% Open Source</h3>
+                    <p>Read the code, fork it, contribute. No gatekeepers, no secrets.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blockchain Explorer Section -->
+    <section id="explorer" class="explorer-section">
+        <div class="container">
+            <h2 class="section-title gradient-text">Blockchain Explorer</h2>
+            
+            <div class="explorer-search glass">
+                <input type="text" placeholder="Search by block hash, transaction ID, or address..." id="explorerSearch">
+                <button class="search-btn glass-btn" id="searchBtn">Search</button>
+            </div>
+
+            <div class="explorer-content">
+                <div class="explorer-tabs">
+                    <button class="tab-btn active" data-tab="blocks">Recent Blocks</button>
+                    <button class="tab-btn" data-tab="transactions">Recent Transactions</button>
+                    <button class="tab-btn" data-tab="stats">Network Stats</button>
+                </div>
+
+                <div class="tab-content active" id="blocks">
+                    <div class="blocks-list">
+                        <div class="block-item glass" id="blockTemplate" style="display: none;">
+                            <div class="block-info">
+                                <div class="block-height">#<span class="height-value"></span></div>
+                                <div class="block-hash"><span class="hash-value"></span></div>
+                                <div class="block-details">
+                                    <span class="block-time"></span> | 
+                                    <span class="block-txs"></span> transactions | 
+                                    <span class="block-size"></span>
+                                </div>
+                            </div>
+                            <div class="block-reward">
+                                <span class="reward-value"></span> AXE
+                            </div>
+                        </div>
+                        <div id="blocksContainer"></div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="transactions">
+                    <div class="transactions-list">
+                        <div class="tx-item glass" id="txTemplate" style="display: none;">
+                            <div class="tx-info">
+                                <div class="tx-hash"><span class="tx-hash-value"></span></div>
+                                <div class="tx-details">
+                                    <span class="tx-time"></span> | 
+                                    <span class="tx-amount"></span> AXE | 
+                                    <span class="tx-fee"></span> fee
+                                </div>
+                            </div>
+                            <div class="tx-status confirmed">Confirmed</div>
+                        </div>
+                        <div id="transactionsContainer"></div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="stats">
+                    <div class="network-stats">
+                        <div class="stats-grid">
+                            <div class="stat-card glass">
+                                <h4>Network Hash Rate</h4>
+                                <div class="stat-value-large" id="networkHashRate">0 H/s</div>
+                            </div>
+                            <div class="stat-card glass">
+                                <h4>Difficulty</h4>
+                                <div class="stat-value-large" id="networkDifficulty">0</div>
+                            </div>
+                            <div class="stat-card glass">
+                                <h4>Total Supply</h4>
+                                <div class="stat-value-large" id="totalSupply">0 AXE</div>
+                            </div>
+                            <div class="stat-card glass">
+                                <h4>Next Halving</h4>
+                                <div class="stat-value-large" id="nextHalving">0 blocks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wallet Section -->
+    <section id="wallet" class="wallet-section">
+        <div class="container">
+            <h2 class="section-title gradient-text">Get Started</h2>
+            
+            <div class="wallet-content">
+                <div class="wallet-options">
+                    <div class="wallet-card glass">
+                        <h3>SuperAxeCoin Wallet</h3>
+                        <p>Modern Electron-based wallet replacing the old QT interface. Clean, fast, and easy to use.</p>
+                        <div class="wallet-features">
+                            <span class="feature-tag">✓ Modern UI</span>
+                            <span class="feature-tag">✓ Full Node</span>
+                            <span class="feature-tag">✓ Mining Support</span>
+                        </div>
+                        <a href="#" class="wallet-download glass-btn">Download Wallet</a>
+                    </div>
+
+                    <div class="wallet-card glass">
+                        <h3>Run a Node</h3>
+                        <p>Help the network by running superaxecoind. Headless daemon perfect for servers and advanced users.</p>
+                        <div class="wallet-features">
+                            <span class="feature-tag">✓ CLI Interface</span>
+                            <span class="feature-tag">✓ RPC API</span>
+                            <span class="feature-tag">✓ Low Resource</span>
+                        </div>
+                        <a href="#" class="wallet-download glass-btn">View Docs</a>
+                    </div>
+                </div>
+
+                <div class="wallet-interface glass" id="walletInterface" style="display: none;">
+                    <div class="wallet-header">
+                        <h3>Your SuperAxeCoin Wallet</h3>
+                        <div class="wallet-address" id="walletAddress">Not Connected</div>
+                    </div>
+                    
+                    <div class="wallet-balance">
+                        <div class="balance-display">
+                            <span class="balance-amount" id="walletBalance">0.00000000</span>
+                            <span class="balance-currency">AXE</span>
+                        </div>
+                    </div>
+
+                    <div class="wallet-actions">
+                        <button class="action-btn glass-btn" id="sendBtn">Send</button>
+                        <button class="action-btn glass-btn" id="receiveBtn">Receive</button>
+                        <button class="action-btn glass-btn" id="historyBtn">History</button>
+                    </div>
+
+                    <div class="transaction-form glass" id="sendForm" style="display: none;">
+                        <h4>Send AXE</h4>
+                        <input type="text" placeholder="Recipient Address" id="recipientAddress">
+                        <input type="number" placeholder="Amount (AXE)" id="sendAmount" step="0.00000001">
+                        <input type="number" placeholder="Fee (AXE)" id="sendFee" value="0.00001">
+                        <button class="send-tx-btn glass-btn" id="confirmSend">Send Transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mining Section -->
+    <section id="mining" class="mining-section">
+        <div class="container">
+            <h2 class="section-title gradient-text">Mining SuperAxeCoin</h2>
+            
+            <div class="mining-content">
+                <div class="mining-info glass">
+                    <h3>Start Mining Today</h3>
+                    <p>SuperAxeCoin uses SHA256 algorithm - same as Bitcoin! Use your existing ASIC hardware.</p>
+                    
+                    <div class="mining-stats">
+                        <div class="mining-stat">
+                            <span class="stat-label">Algorithm:</span>
+                            <span class="stat-value">SHA256</span>
+                        </div>
+                        <div class="mining-stat">
+                            <span class="stat-label">Block Reward:</span>
+                            <span class="stat-value" id="currentReward">500 AXE</span>
+                        </div>
+                        <div class="mining-stat">
+                            <span class="stat-label">Block Time:</span>
+                            <span class="stat-value">2 minutes</span>
+                        </div>
+                        <div class="mining-stat">
+                            <span class="stat-label">Difficulty Adjustment:</span>
+                            <span class="stat-value">Every block (LWMA)</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mining-pools glass">
+                    <h3>Mining Pools</h3>
+                    <div class="pool-list">
+                        <div class="pool-item">
+                            <div class="pool-info">
+                                <div class="pool-name">SuperAxe Pool</div>
+                                <div class="pool-details">1% Fee | PPLNS | 99.9% Uptime</div>
+                            </div>
+                            <div class="pool-hashrate">15.2 TH/s</div>
+                        </div>
+                        <div class="pool-item">
+                            <div class="pool-info">
+                                <div class="pool-name">AXE Mining Pool</div>
+                                <div class="pool-details">0.5% Fee | PPS+ | Global Servers</div>
+                            </div>
+                            <div class="pool-hashrate">8.7 TH/s</div>
+                        </div>
+                        <div class="pool-item">
+                            <div class="pool-info">
+                                <div class="pool-name">MineAXE.com</div>
+                                <div class="pool-details">2% Fee | Solo Mining Available</div>
+                            </div>
+                            <div class="pool-hashrate">3.1 TH/s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title gradient-text">About SuperAxeCoin</h2>
+
+            <div class="about-content">
+                <div class="about-text glass">
+                    <h3>Mining For Fun, Not Profit</h3>
+                    <p>
+                        SuperAxeCoin is a hobbyist cryptocurrency built for people who want to learn about
+                        blockchain technology, experiment with mining, and have fun doing it. We're not here
+                        to promise you riches or "moon" - we're here to provide a real, working blockchain
+                        that you can mine, tinker with, and learn from.
+                    </p>
+                    <p>
+                        Based on modern Bitcoin Core, SuperAxeCoin includes all the latest features like
+                        Taproot, SegWit, and Schnorr signatures active from genesis. With 2-minute blocks
+                        and LWMA difficulty adjustment, it's designed to be accessible and responsive for
+                        small-scale miners and learners alike.
+                    </p>
+
+                    <div class="comparison-table">
+                        <h4>Technical Comparison vs Bitcoin</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>SuperAxeCoin</th>
+                                    <th>Bitcoin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Block Time</td>
+                                    <td>2 minutes</td>
+                                    <td>10 minutes</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficulty Adjustment</td>
+                                    <td>Every block (LWMA)</td>
+                                    <td>Every 2016 blocks</td>
+                                </tr>
+                                <tr>
+                                    <td>Max Supply</td>
+                                    <td>210M AXE</td>
+                                    <td>21M BTC</td>
+                                </tr>
+                                <tr>
+                                    <td>Modern Features</td>
+                                    <td>Active at genesis</td>
+                                    <td>Gradual activation</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="learning-resources glass">
+                    <h3>Learning Resources</h3>
+                    <p class="resources-intro">
+                        Whether you're learning to mine, building apps, or just curious about how blockchains work,
+                        we provide the tools and environments you need.
+                    </p>
+
+                    <div class="resource-cards">
+                        <div class="resource-card">
+                            <div class="resource-icon">🔧</div>
+                            <h4>Testnet</h4>
+                            <p>Public testnet for experimenting without risking real coins. Perfect for developers and learners.</p>
+                            <div class="resource-details">
+                                <span class="detail-item">Testnet RPC: testnet.superaxecoin.org</span>
+                                <span class="detail-item">Faucet available for test coins</span>
+                            </div>
+                        </div>
+
+                        <div class="resource-card">
+                            <div class="resource-icon">🧪</div>
+                            <h4>Regtest Mode</h4>
+                            <p>Run your own private blockchain locally. Instant block generation for rapid testing and development.</p>
+                            <div class="resource-details">
+                                <span class="detail-item">-regtest flag to enable</span>
+                                <span class="detail-item">Generate blocks on demand</span>
+                            </div>
+                        </div>
+
+                        <div class="resource-card">
+                            <div class="resource-icon">📚</div>
+                            <h4>Documentation</h4>
+                            <p>Comprehensive guides for setting up nodes, mining, and building on SuperAxeCoin.</p>
+                            <div class="resource-details">
+                                <span class="detail-item">Mining tutorials</span>
+                                <span class="detail-item">RPC API reference</span>
+                            </div>
+                        </div>
+
+                        <div class="resource-card">
+                            <div class="resource-icon">💻</div>
+                            <h4>Open Source</h4>
+                            <p>100% open source. Read the code, contribute, or fork it for your own experiments.</p>
+                            <div class="resource-details">
+                                <span class="detail-item">GitHub repository</span>
+                                <span class="detail-item">MIT licensed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer glass">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="logo.png" alt="SuperAxeCoin" class="logo-img">
+                        <span class="logo-text">SuperAxeCoin</span>
+                    </div>
+                    <p>Mining for the rest of us</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="#">Documentation</a>
+                    <a href="#">GitHub</a>
+                    <a href="#">Block Explorer</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <a href="#">Discord</a>
+                    <a href="#">Telegram</a>
+                    <a href="#">Twitter</a>
+                    <a href="#">Reddit</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Bug Reports</a>
+                    <a href="#">Feature Requests</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 SuperAxeCoin. Open source cryptocurrency project.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
