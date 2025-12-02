@@ -2,7 +2,7 @@
 class SuperAxeWeb {
     constructor() {
         // API Configuration
-        this.API_URL = 'https://api.superaxecoin.org';
+        this.API_URL = 'https://api.superaxecoin.com';
 
         this.walletConnected = false;
         this.currentTab = 'blocks';
