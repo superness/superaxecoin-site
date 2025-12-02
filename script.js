@@ -564,14 +564,11 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
 
             this.walletConnected = true;
             this.currentWalletAddress = wallet.address;
+
+            // Show backup modal - user must acknowledge before continuing
+            await this.showWalletBackupModal(wallet);
+
             this.showWalletInterface(wallet.address, '0.00000000');
-
-            // Show important backup info
-            this.showNotification(
-                `Wallet created!\n\nAddress: ${wallet.address}\n\nIMPORTANT: Save your private key (WIF) safely:\n${wallet.wif}\n\nThis is the ONLY way to recover your funds!`,
-                'success'
-            );
-
             await this.refreshWalletBalance();
 
         } catch (error) {
@@ -596,6 +593,85 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
         } catch (error) {
             // Address doesn't exist yet, balance is 0
         }
+    }
+
+    showWalletBackupModal(wallet) {
+        return new Promise((resolve) => {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'wallet-backup-overlay';
+            overlay.innerHTML = `
+                <div class="wallet-backup-modal glass">
+                    <h2>Wallet Created Successfully!</h2>
+                    <p class="warning-text">IMPORTANT: Save your private key now. This is the ONLY way to recover your funds. If you lose it, your coins are gone forever.</p>
+
+                    <div class="wallet-info-box">
+                        <div class="info-row">
+                            <label>Your Address:</label>
+                            <code class="address-display">${wallet.address}</code>
+                        </div>
+                        <div class="info-row">
+                            <label>Private Key (WIF):</label>
+                            <code class="wif-display">${wallet.wif}</code>
+                        </div>
+                    </div>
+
+                    <button class="download-btn glass-btn" id="downloadWalletBtn">
+                        Download Wallet Backup
+                    </button>
+
+                    <div class="confirm-section">
+                        <label class="confirm-label">
+                            <input type="checkbox" id="backupConfirmCheckbox">
+                            <span>I have saved my private key and understand that if I lose it, my funds cannot be recovered.</span>
+                        </label>
+                    </div>
+
+                    <button class="continue-btn glass-btn" id="continueWalletBtn" disabled>
+                        Continue to Wallet
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Download wallet backup
+            document.getElementById('downloadWalletBtn').addEventListener('click', () => {
+                const backupData = {
+                    address: wallet.address,
+                    privateKeyWIF: wallet.wif,
+                    createdAt: new Date().toISOString(),
+                    network: 'SuperAxeCoin Mainnet',
+                    warning: 'KEEP THIS FILE SECURE. Anyone with this private key can spend your coins.'
+                };
+
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `superaxecoin-wallet-${wallet.address.substring(0, 8)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                this.showNotification('Wallet backup downloaded!', 'success');
+            });
+
+            // Enable continue button when checkbox is checked
+            const checkbox = document.getElementById('backupConfirmCheckbox');
+            const continueBtn = document.getElementById('continueWalletBtn');
+
+            checkbox.addEventListener('change', () => {
+                continueBtn.disabled = !checkbox.checked;
+            });
+
+            // Continue to wallet
+            continueBtn.addEventListener('click', () => {
+                overlay.remove();
+                resolve();
+            });
+        });
     }
 
     showWalletInterface(address, balance) {
