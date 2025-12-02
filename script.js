@@ -523,24 +523,30 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
 
         // Check if wallet already exists
         if (this.axeWallet.hasStoredWallet()) {
-            const password = prompt('Enter your wallet password:');
-            if (!password) return;
+            const choice = confirm('You already have a saved wallet.\n\nClick OK to load existing wallet\nClick Cancel to create a NEW wallet (old wallet will be replaced)');
 
-            if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+            if (choice) {
+                // Load existing wallet
+                const password = prompt('Enter your wallet password:');
+                if (!password) return;
 
-            try {
-                await this.axeWallet.loadWallet(password);
-                this.walletConnected = true;
-                this.currentWalletAddress = this.axeWallet.wallet.address;
-                this.showWalletInterface(this.axeWallet.wallet.address, '0.00000000');
-                this.showNotification('Wallet loaded successfully!', 'success');
-                await this.refreshWalletBalance();
-            } catch (error) {
-                this.showNotification('Invalid password or corrupted wallet', 'error');
-            } finally {
-                if (btn) { btn.textContent = originalText; btn.disabled = false; }
+                if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+
+                try {
+                    await this.axeWallet.loadWallet(password);
+                    this.walletConnected = true;
+                    this.currentWalletAddress = this.axeWallet.wallet.address;
+                    this.showWalletInterface(this.axeWallet.wallet.address, '0.00000000');
+                    this.showNotification('Wallet loaded successfully!', 'success');
+                    await this.refreshWalletBalance();
+                } catch (error) {
+                    this.showNotification('Invalid password or corrupted wallet', 'error');
+                } finally {
+                    if (btn) { btn.textContent = originalText; btn.disabled = false; }
+                }
+                return;
             }
-            return;
+            // User chose to create new wallet - continue below
         }
 
         // Create new wallet
