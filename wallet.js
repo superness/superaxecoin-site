@@ -24,15 +24,35 @@ class SuperAxeWallet {
         return array;
     }
 
+    // Convert Uint8Array to CryptoJS WordArray
+    uint8ArrayToWordArray(u8arr) {
+        const words = [];
+        for (let i = 0; i < u8arr.length; i++) {
+            words[i >>> 2] |= u8arr[i] << (24 - (i % 4) * 8);
+        }
+        return CryptoJS.lib.WordArray.create(words, u8arr.length);
+    }
+
+    // Convert CryptoJS WordArray to Uint8Array
+    wordArrayToUint8Array(wordArray) {
+        const words = wordArray.words;
+        const sigBytes = wordArray.sigBytes;
+        const u8 = new Uint8Array(sigBytes);
+        for (let i = 0; i < sigBytes; i++) {
+            u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+        }
+        return u8;
+    }
+
     // SHA256 hash using CryptoJS
     sha256(data) {
         let wordArray;
         if (data instanceof Uint8Array) {
-            wordArray = CryptoJS.lib.WordArray.create(data);
+            wordArray = this.uint8ArrayToWordArray(data);
         } else if (typeof data === 'string') {
             wordArray = CryptoJS.enc.Utf8.parse(data);
         } else {
-            wordArray = CryptoJS.lib.WordArray.create(data);
+            wordArray = this.uint8ArrayToWordArray(new Uint8Array(data));
         }
         const hash = CryptoJS.SHA256(wordArray);
         return this.wordArrayToUint8Array(hash);
@@ -48,23 +68,12 @@ class SuperAxeWallet {
     ripemd160(data) {
         let wordArray;
         if (data instanceof Uint8Array) {
-            wordArray = CryptoJS.lib.WordArray.create(data);
+            wordArray = this.uint8ArrayToWordArray(data);
         } else {
-            wordArray = CryptoJS.lib.WordArray.create(data);
+            wordArray = this.uint8ArrayToWordArray(new Uint8Array(data));
         }
         const hash = CryptoJS.RIPEMD160(wordArray);
         return this.wordArrayToUint8Array(hash);
-    }
-
-    // Convert CryptoJS WordArray to Uint8Array
-    wordArrayToUint8Array(wordArray) {
-        const words = wordArray.words;
-        const sigBytes = wordArray.sigBytes;
-        const u8 = new Uint8Array(sigBytes);
-        for (let i = 0; i < sigBytes; i++) {
-            u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
-        }
-        return u8;
     }
 
     // Base58 alphabet
