@@ -7,9 +7,9 @@ class SuperAxeWallet {
     constructor() {
         // SuperAxeCoin network parameters (from chainparams.cpp)
         this.network = {
-            pubKeyHash: 76,      // 'X' addresses
-            scriptHash: 16,      // '7' addresses
-            wif: 204,            // Private key prefix
+            pubKeyHash: 63,      // 'S' addresses (mainnet)
+            scriptHash: 75,      // 'X' addresses (P2SH)
+            wif: 191,            // Private key prefix
             bech32: 'axe'
         };
 
