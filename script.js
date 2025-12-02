@@ -7,6 +7,7 @@ class SuperAxeWeb {
         this.walletConnected = false;
         this.currentTab = 'blocks';
         this.apiAvailable = false;
+        this.axeWallet = new SuperAxeWallet();
         this.cachedData = {
             blocks: [],
             transactions: [],
@@ -519,27 +520,65 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
         const btn = document.getElementById('webWalletConnect');
         const originalText = btn.textContent;
 
+        // Check if wallet already exists
+        if (this.axeWallet.hasStoredWallet()) {
+            const password = prompt('Enter your wallet password:');
+            if (!password) return;
+
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+
+            try {
+                await this.axeWallet.loadWallet(password);
+                this.walletConnected = true;
+                this.currentWalletAddress = this.axeWallet.wallet.address;
+                this.showWalletInterface(this.axeWallet.wallet.address, '0.00000000');
+                this.showNotification('Wallet loaded successfully!', 'success');
+                await this.refreshWalletBalance();
+            } catch (error) {
+                this.showNotification('Invalid password or corrupted wallet', 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+            return;
+        }
+
+        // Create new wallet
+        const password = prompt('Create a password for your wallet:\n(This encrypts your private key)');
+        if (!password) return;
+
+        const confirmPassword = prompt('Confirm your password:');
+        if (password !== confirmPassword) {
+            this.showNotification('Passwords do not match', 'error');
+            return;
+        }
+
         btn.textContent = 'Creating...';
         btn.disabled = true;
 
         try {
-            await this.sleep(1500);
+            // Generate real wallet
+            const wallet = await this.axeWallet.generateWallet();
 
-            // Generate a demo wallet address (in production, use proper crypto)
-            const walletAddress = 'X' + this.generateHash().substring(0, 33);
+            // Save encrypted to localStorage
+            await this.axeWallet.saveWallet(password);
 
             this.walletConnected = true;
-            this.currentWalletAddress = walletAddress;
-            this.showWalletInterface(walletAddress, '0.00000000');
-            this.showNotification('Web wallet created! This is a demo wallet.', 'success');
+            this.currentWalletAddress = wallet.address;
+            this.showWalletInterface(wallet.address, '0.00000000');
 
-            // If API available, check for balance
-            if (this.apiAvailable) {
-                this.refreshWalletBalance();
-            }
+            // Show important backup info
+            this.showNotification(
+                `Wallet created!\n\nAddress: ${wallet.address}\n\nIMPORTANT: Save your private key (WIF) safely:\n${wallet.wif}\n\nThis is the ONLY way to recover your funds!`,
+                'success'
+            );
+
+            await this.refreshWalletBalance();
 
         } catch (error) {
-            this.showNotification('Failed to create wallet', 'error');
+            console.error('Wallet creation error:', error);
+            this.showNotification('Failed to create wallet: ' + error.message, 'error');
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;
@@ -581,7 +620,14 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
 
     showReceiveAddress() {
         if (this.currentWalletAddress) {
-            this.showNotification(`Your receive address:\n${this.currentWalletAddress}`, 'info');
+            // Copy to clipboard
+            navigator.clipboard.writeText(this.currentWalletAddress).then(() => {
+                this.showNotification(`Address copied to clipboard!\n\n${this.currentWalletAddress}`, 'success');
+            }).catch(() => {
+                this.showNotification(`Your receive address:\n\n${this.currentWalletAddress}`, 'info');
+            });
+        } else {
+            this.showNotification('Please create a wallet first', 'warning');
         }
     }
 
@@ -594,10 +640,15 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
     }
 
     async sendTransaction() {
-        const recipient = document.getElementById('recipientAddress')?.value;
-        const amount = document.getElementById('sendAmount')?.value;
+        if (!this.axeWallet.wallet) {
+            this.showNotification('Please create or load a wallet first', 'error');
+            return;
+        }
 
-        if (!recipient || !amount) {
+        const recipient = document.getElementById('recipientAddress')?.value?.trim();
+        const amount = parseFloat(document.getElementById('sendAmount')?.value);
+
+        if (!recipient || !amount || amount <= 0) {
             this.showNotification('Please fill in all required fields', 'error');
             return;
         }
@@ -608,7 +659,44 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             return;
         }
 
-        this.showNotification('Demo mode: Transactions cannot be sent. Use the desktop wallet for real transactions.', 'warning');
+        // Confirm transaction
+        const confirmed = confirm(
+            `Send ${amount} AXE to:\n${recipient}\n\nThis action cannot be undone.`
+        );
+        if (!confirmed) return;
+
+        const btn = document.getElementById('confirmSend');
+        const originalText = btn?.textContent || 'Send';
+        if (btn) {
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+        }
+
+        try {
+            // Create and sign transaction
+            const txHex = await this.axeWallet.createTransaction(recipient, amount);
+
+            // Broadcast
+            const txid = await this.axeWallet.broadcastTransaction(txHex);
+
+            this.showNotification(`Transaction sent!\n\nTXID: ${txid}`, 'success');
+
+            // Clear form
+            document.getElementById('recipientAddress').value = '';
+            document.getElementById('sendAmount').value = '';
+
+            // Refresh balance
+            await this.refreshWalletBalance();
+
+        } catch (error) {
+            console.error('Transaction error:', error);
+            this.showNotification('Transaction failed: ' + error.message, 'error');
+        } finally {
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
     }
 
     toggleMobileMenu() {
