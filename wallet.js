@@ -24,25 +24,47 @@ class SuperAxeWallet {
         return array;
     }
 
-    // SHA256 hash
-    async sha256(data) {
-        const buffer = typeof data === 'string'
-            ? new TextEncoder().encode(data)
-            : data;
-        const hash = await crypto.subtle.digest('SHA-256', buffer);
-        return new Uint8Array(hash);
+    // SHA256 hash using CryptoJS
+    sha256(data) {
+        let wordArray;
+        if (data instanceof Uint8Array) {
+            wordArray = CryptoJS.lib.WordArray.create(data);
+        } else if (typeof data === 'string') {
+            wordArray = CryptoJS.enc.Utf8.parse(data);
+        } else {
+            wordArray = CryptoJS.lib.WordArray.create(data);
+        }
+        const hash = CryptoJS.SHA256(wordArray);
+        return this.wordArrayToUint8Array(hash);
     }
 
     // Double SHA256
-    async hash256(data) {
-        const first = await this.sha256(data);
-        return await this.sha256(first);
+    hash256(data) {
+        const first = this.sha256(data);
+        return this.sha256(first);
     }
 
-    // RIPEMD160 (simplified implementation)
+    // RIPEMD160 using CryptoJS
     ripemd160(data) {
-        // Using a minimal RIPEMD160 implementation
-        return this._ripemd160(data);
+        let wordArray;
+        if (data instanceof Uint8Array) {
+            wordArray = CryptoJS.lib.WordArray.create(data);
+        } else {
+            wordArray = CryptoJS.lib.WordArray.create(data);
+        }
+        const hash = CryptoJS.RIPEMD160(wordArray);
+        return this.wordArrayToUint8Array(hash);
+    }
+
+    // Convert CryptoJS WordArray to Uint8Array
+    wordArrayToUint8Array(wordArray) {
+        const words = wordArray.words;
+        const sigBytes = wordArray.sigBytes;
+        const u8 = new Uint8Array(sigBytes);
+        for (let i = 0; i < sigBytes; i++) {
+            u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+        }
+        return u8;
     }
 
     // Base58 alphabet
@@ -105,19 +127,19 @@ class SuperAxeWallet {
     }
 
     // Base58Check encode
-    async base58CheckEncode(version, payload) {
+    base58CheckEncode(version, payload) {
         const data = new Uint8Array([version, ...payload]);
-        const checksum = await this.hash256(data);
+        const checksum = this.hash256(data);
         const full = new Uint8Array([...data, ...checksum.slice(0, 4)]);
         return this.base58Encode(full);
     }
 
     // Base58Check decode
-    async base58CheckDecode(str) {
+    base58CheckDecode(str) {
         const data = this.base58Decode(str);
         const payload = data.slice(0, -4);
         const checksum = data.slice(-4);
-        const hash = await this.hash256(payload);
+        const hash = this.hash256(payload);
 
         for (let i = 0; i < 4; i++) {
             if (checksum[i] !== hash[i]) {
@@ -132,18 +154,18 @@ class SuperAxeWallet {
     }
 
     // Generate a new wallet
-    async generateWallet() {
+    generateWallet() {
         // Generate 32 random bytes for private key
         const privateKey = this.getRandomBytes(32);
 
         // Derive public key using secp256k1
-        const publicKey = await this.derivePublicKey(privateKey);
+        const publicKey = this.derivePublicKey(privateKey);
 
         // Derive address from public key
-        const address = await this.publicKeyToAddress(publicKey);
+        const address = this.publicKeyToAddress(publicKey);
 
         // Create WIF (Wallet Import Format) for private key
-        const wif = await this.privateKeyToWIF(privateKey);
+        const wif = this.privateKeyToWIF(privateKey);
 
         this.wallet = {
             privateKey: privateKey,
@@ -156,7 +178,7 @@ class SuperAxeWallet {
     }
 
     // Derive public key from private key using secp256k1
-    async derivePublicKey(privateKey) {
+    derivePublicKey(privateKey) {
         // Use the elliptic curve library (loaded via CDN)
         if (typeof elliptic === 'undefined') {
             throw new Error('Elliptic library not loaded');
@@ -174,27 +196,27 @@ class SuperAxeWallet {
     }
 
     // Convert public key to address
-    async publicKeyToAddress(publicKey) {
+    publicKeyToAddress(publicKey) {
         // SHA256 of public key
-        const sha256Hash = await this.sha256(publicKey);
+        const sha256Hash = this.sha256(publicKey);
 
         // RIPEMD160 of SHA256 hash
         const pubKeyHash = this.ripemd160(sha256Hash);
 
         // Base58Check encode with version byte
-        return await this.base58CheckEncode(this.network.pubKeyHash, pubKeyHash);
+        return this.base58CheckEncode(this.network.pubKeyHash, pubKeyHash);
     }
 
     // Convert private key to WIF format
-    async privateKeyToWIF(privateKey) {
+    privateKeyToWIF(privateKey) {
         // Add compression flag
         const extended = new Uint8Array([...privateKey, 0x01]);
-        return await this.base58CheckEncode(this.network.wif, extended);
+        return this.base58CheckEncode(this.network.wif, extended);
     }
 
     // Import wallet from WIF
-    async importFromWIF(wif) {
-        const decoded = await this.base58CheckDecode(wif);
+    importFromWIF(wif) {
+        const decoded = this.base58CheckDecode(wif);
 
         if (decoded.version !== this.network.wif) {
             throw new Error('Invalid WIF version');
@@ -206,8 +228,8 @@ class SuperAxeWallet {
             privateKey = privateKey.slice(0, 32);
         }
 
-        const publicKey = await this.derivePublicKey(privateKey);
-        const address = await this.publicKeyToAddress(publicKey);
+        const publicKey = this.derivePublicKey(privateKey);
+        const address = this.publicKeyToAddress(publicKey);
 
         this.wallet = {
             privateKey: privateKey,
@@ -581,87 +603,6 @@ class SuperAxeWallet {
         return new TextDecoder().decode(decrypted);
     }
 
-    // RIPEMD160 implementation
-    _ripemd160(message) {
-        const K1 = [0x00000000, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e];
-        const K2 = [0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0x00000000];
-
-        const R1 = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,7,4,13,1,10,6,15,3,12,0,9,5,2,14,11,8,3,10,14,4,9,15,8,1,2,7,0,6,13,11,5,12,1,9,11,10,0,8,12,4,13,3,7,15,14,5,6,2,4,0,5,9,7,12,2,10,14,1,3,8,11,6,15,13];
-        const R2 = [5,14,7,0,9,2,11,4,13,6,15,8,1,10,3,12,6,11,3,7,0,13,5,10,14,15,8,12,4,9,1,2,15,5,1,3,7,14,6,9,11,8,12,2,10,0,4,13,8,6,4,1,3,11,15,0,5,12,2,13,9,7,10,14,12,15,10,4,1,5,8,7,6,2,13,14,0,3,9,11];
-        const S1 = [11,14,15,12,5,8,7,9,11,13,14,15,6,7,9,8,7,6,8,13,11,9,7,15,7,12,15,9,11,7,13,12,11,13,6,7,14,9,13,15,14,8,13,6,5,12,7,5,11,12,14,15,14,15,9,8,9,14,5,6,8,6,5,12,9,15,5,11,6,8,13,12,5,12,13,14,11,8,5,6];
-        const S2 = [8,9,9,11,13,15,15,5,7,7,8,11,14,14,12,6,9,13,15,7,12,8,9,11,7,7,12,7,6,15,13,11,9,7,15,11,8,6,6,14,12,13,5,14,13,13,7,5,15,5,8,11,14,14,6,14,6,9,12,9,12,5,15,8,8,5,12,9,12,5,14,6,8,13,6,5,15,13,11,11];
-
-        const f = (j, x, y, z) => {
-            if (j < 16) return x ^ y ^ z;
-            if (j < 32) return (x & y) | (~x & z);
-            if (j < 48) return (x | ~y) ^ z;
-            if (j < 64) return (x & z) | (y & ~z);
-            return x ^ (y | ~z);
-        };
-
-        const rotl = (x, n) => ((x << n) | (x >>> (32 - n))) >>> 0;
-
-        // Padding
-        const msg = new Uint8Array(message);
-        const bitLen = msg.length * 8;
-        const padLen = (msg.length % 64 < 56) ? 56 - msg.length % 64 : 120 - msg.length % 64;
-        const padded = new Uint8Array(msg.length + padLen + 8);
-        padded.set(msg);
-        padded[msg.length] = 0x80;
-
-        // Length in bits, little-endian
-        for (let i = 0; i < 8; i++) {
-            padded[padded.length - 8 + i] = (bitLen >>> (i * 8)) & 0xff;
-        }
-
-        // Initial hash values
-        let h0 = 0x67452301;
-        let h1 = 0xefcdab89;
-        let h2 = 0x98badcfe;
-        let h3 = 0x10325476;
-        let h4 = 0xc3d2e1f0;
-
-        // Process blocks
-        for (let i = 0; i < padded.length; i += 64) {
-            const X = [];
-            for (let j = 0; j < 16; j++) {
-                X[j] = padded[i + j*4] | (padded[i + j*4 + 1] << 8) |
-                       (padded[i + j*4 + 2] << 16) | (padded[i + j*4 + 3] << 24);
-            }
-
-            let al = h0, bl = h1, cl = h2, dl = h3, el = h4;
-            let ar = h0, br = h1, cr = h2, dr = h3, er = h4;
-
-            for (let j = 0; j < 80; j++) {
-                const jj = Math.floor(j / 16);
-                let t = (al + f(j, bl, cl, dl) + X[R1[j]] + K1[jj]) >>> 0;
-                t = (rotl(t, S1[j]) + el) >>> 0;
-                al = el; el = dl; dl = rotl(cl, 10); cl = bl; bl = t;
-
-                t = (ar + f(79 - j, br, cr, dr) + X[R2[j]] + K2[jj]) >>> 0;
-                t = (rotl(t, S2[j]) + er) >>> 0;
-                ar = er; er = dr; dr = rotl(cr, 10); cr = br; br = t;
-            }
-
-            const t = (h1 + cl + dr) >>> 0;
-            h1 = (h2 + dl + er) >>> 0;
-            h2 = (h3 + el + ar) >>> 0;
-            h3 = (h4 + al + br) >>> 0;
-            h4 = (h0 + bl + cr) >>> 0;
-            h0 = t;
-        }
-
-        // Output
-        const result = new Uint8Array(20);
-        [h0, h1, h2, h3, h4].forEach((h, i) => {
-            result[i*4] = h & 0xff;
-            result[i*4 + 1] = (h >>> 8) & 0xff;
-            result[i*4 + 2] = (h >>> 16) & 0xff;
-            result[i*4 + 3] = (h >>> 24) & 0xff;
-        });
-
-        return result;
-    }
 }
 
 // Export for use
