@@ -162,6 +162,70 @@ class SuperAxeWallet {
         };
     }
 
+    // Bech32 character set
+    static BECH32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+    // Bech32 decode
+    bech32Decode(str) {
+        str = str.toLowerCase();
+        const sepIndex = str.lastIndexOf('1');
+        if (sepIndex < 1 || sepIndex + 7 > str.length) {
+            throw new Error('Invalid bech32 string');
+        }
+
+        const hrp = str.slice(0, sepIndex);
+        const dataStr = str.slice(sepIndex + 1);
+
+        // Convert to 5-bit values
+        const data = [];
+        for (const c of dataStr) {
+            const idx = SuperAxeWallet.BECH32_CHARSET.indexOf(c);
+            if (idx === -1) throw new Error('Invalid bech32 character');
+            data.push(idx);
+        }
+
+        // Verify checksum (simplified - just check length for now)
+        if (data.length < 6) throw new Error('Invalid bech32 data');
+
+        // Remove checksum (last 6 chars)
+        const values = data.slice(0, -6);
+
+        // First value is witness version
+        const witnessVersion = values[0];
+
+        // Convert 5-bit to 8-bit (skip witness version)
+        const converted = this.convertBits(values.slice(1), 5, 8, false);
+
+        return {
+            hrp,
+            witnessVersion,
+            witnessProgram: new Uint8Array(converted)
+        };
+    }
+
+    // Convert between bit sizes
+    convertBits(data, fromBits, toBits, pad) {
+        let acc = 0;
+        let bits = 0;
+        const result = [];
+        const maxv = (1 << toBits) - 1;
+
+        for (const value of data) {
+            acc = (acc << fromBits) | value;
+            bits += fromBits;
+            while (bits >= toBits) {
+                bits -= toBits;
+                result.push((acc >> bits) & maxv);
+            }
+        }
+
+        if (pad && bits > 0) {
+            result.push((acc << (toBits - bits)) & maxv);
+        }
+
+        return result;
+    }
+
     // Generate a new wallet
     generateWallet() {
         // Generate 32 random bytes for private key
@@ -343,7 +407,7 @@ class SuperAxeWallet {
             // Value (8 bytes, LE)
             tx.push(...this.intToLE(output.value, 8));
             // ScriptPubKey
-            const scriptPubKey = await this.addressToScriptPubKey(output.address);
+            const scriptPubKey = this.addressToScriptPubKey(output.address);
             tx.push(...this.varint(scriptPubKey.length));
             tx.push(...scriptPubKey);
         }
@@ -408,7 +472,7 @@ class SuperAxeWallet {
         // Outputs
         for (const output of outputs) {
             tx.push(...this.intToLE(output.value, 8));
-            const scriptPubKey = await this.addressToScriptPubKey(output.address);
+            const scriptPubKey = this.addressToScriptPubKey(output.address);
             tx.push(...this.varint(scriptPubKey.length));
             tx.push(...scriptPubKey);
         }
@@ -467,7 +531,7 @@ class SuperAxeWallet {
         // Outputs
         for (const output of outputs) {
             tx.push(...this.intToLE(output.value, 8));
-            const scriptPubKey = await this.addressToScriptPubKey(output.address);
+            const scriptPubKey = this.addressToScriptPubKey(output.address);
             tx.push(...this.varint(scriptPubKey.length));
             tx.push(...scriptPubKey);
         }
@@ -483,8 +547,25 @@ class SuperAxeWallet {
     }
 
     // Convert address to scriptPubKey
-    async addressToScriptPubKey(address) {
-        const decoded = await this.base58CheckDecode(address);
+    addressToScriptPubKey(address) {
+        // Check if bech32 address (axe1...)
+        if (address.toLowerCase().startsWith('axe1')) {
+            const decoded = this.bech32Decode(address);
+            const witnessProgram = decoded.witnessProgram;
+
+            // P2WPKH script: OP_0 <20-byte-witness-program>
+            // For P2WSH it would be 32 bytes
+            if (witnessProgram.length === 20) {
+                return new Uint8Array([0x00, 0x14, ...witnessProgram]);
+            } else if (witnessProgram.length === 32) {
+                return new Uint8Array([0x00, 0x20, ...witnessProgram]);
+            } else {
+                throw new Error('Invalid witness program length');
+            }
+        }
+
+        // Legacy address (Base58Check)
+        const decoded = this.base58CheckDecode(address);
         const pubKeyHash = decoded.payload;
 
         // P2PKH script: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG

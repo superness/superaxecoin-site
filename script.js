@@ -793,8 +793,10 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             return;
         }
 
-        // Validate address format (S=P2PKH, X=P2SH)
-        if (!/^[SX][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(recipient)) {
+        // Validate address format (S=P2PKH, X=P2SH, axe1=bech32)
+        const isLegacy = /^[SX][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(recipient);
+        const isBech32 = /^axe1[a-z0-9]{38,59}$/.test(recipient);
+        if (!isLegacy && !isBech32) {
             this.showNotification('Invalid SuperAxeCoin address format', 'error');
             return;
         }
