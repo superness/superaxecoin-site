@@ -518,16 +518,15 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
     }
 
     async createWebWallet() {
-        const btn = document.getElementById('webWalletConnect');
-        const originalText = btn.textContent;
+        const btn = document.getElementById('createWebWalletBtn') || document.getElementById('webWalletConnect');
+        const originalText = btn ? btn.textContent : '';
 
         // Check if wallet already exists
         if (this.axeWallet.hasStoredWallet()) {
             const password = prompt('Enter your wallet password:');
             if (!password) return;
 
-            btn.textContent = 'Loading...';
-            btn.disabled = true;
+            if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
 
             try {
                 await this.axeWallet.loadWallet(password);
@@ -539,8 +538,7 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             } catch (error) {
                 this.showNotification('Invalid password or corrupted wallet', 'error');
             } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
+                if (btn) { btn.textContent = originalText; btn.disabled = false; }
             }
             return;
         }
@@ -555,8 +553,7 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             return;
         }
 
-        btn.textContent = 'Creating...';
-        btn.disabled = true;
+        if (btn) { btn.textContent = 'Creating...'; btn.disabled = true; }
 
         try {
             // Generate real wallet
@@ -581,8 +578,7 @@ Sent: ${(info.sent / 100000000).toFixed(8)} AXE
             console.error('Wallet creation error:', error);
             this.showNotification('Failed to create wallet: ' + error.message, 'error');
         } finally {
-            btn.textContent = originalText;
-            btn.disabled = false;
+            if (btn) { btn.textContent = originalText; btn.disabled = false; }
         }
     }
 
