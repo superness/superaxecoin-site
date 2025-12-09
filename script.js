@@ -19,6 +19,7 @@ class SuperAxeWeb {
     async init() {
         this.setupEventListeners();
         this.setupNavigation();
+        this.setupDetailModal();
         await this.checkApiStatus();
         await this.loadExplorerData();
         await this.loadPoolStats();
@@ -26,6 +27,76 @@ class SuperAxeWeb {
         this.animateElements();
         this.setupParallax();
         this.setupHeroAnimations();
+        this.handleDeepLink();
+    }
+
+    setupDetailModal() {
+        const overlay = document.getElementById('detailModalOverlay');
+        const closeBtn = document.getElementById('detailModalClose');
+
+        // Close on X button
+        closeBtn?.addEventListener('click', () => this.closeDetailModal());
+
+        // Close on overlay click (outside modal)
+        overlay?.addEventListener('click', (e) => {
+            if (e.target === overlay) this.closeDetailModal();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.closeDetailModal();
+        });
+    }
+
+    openDetailModal(content) {
+        const overlay = document.getElementById('detailModalOverlay');
+        const contentEl = document.getElementById('detailModalContent');
+        if (overlay && contentEl) {
+            contentEl.innerHTML = content;
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeDetailModal() {
+        const overlay = document.getElementById('detailModalOverlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+            // Clear URL params when closing
+            if (window.history.replaceState) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    }
+
+    handleDeepLink() {
+        const params = new URLSearchParams(window.location.search);
+        const block = params.get('block');
+        const tx = params.get('tx');
+        const address = params.get('address');
+
+        if (block || tx || address) {
+            // Scroll to explorer section
+            setTimeout(() => {
+                document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+
+            // Load the appropriate detail view
+            setTimeout(async () => {
+                if (block) await this.showBlockDetails(block);
+                else if (tx) await this.showTransactionDetails(tx);
+                else if (address) await this.showAddressDetails(address);
+            }, 800);
+        }
+    }
+
+    updateUrlParam(type, value) {
+        if (window.history.replaceState) {
+            const url = new URL(window.location);
+            url.searchParams.set(type, value);
+            window.history.replaceState({}, '', url);
+        }
     }
 
     async checkApiStatus() {
@@ -441,19 +512,112 @@ class SuperAxeWeb {
             return;
         }
 
+        // Show loading state
+        this.openDetailModal('<div class="detail-loading">Loading block details...</div>');
+
         try {
             const block = await this.apiCall(`/api/block/${heightOrHash}`);
-            const details = `
-Block #${block.height}
-Hash: ${block.hash}
-Time: ${new Date(block.timestamp * 1000).toLocaleString()}
-Transactions: ${block.tx_count || block.transactions?.length || 0}
-Size: ${(block.size / 1024).toFixed(2)} KB
-Difficulty: ${block.difficulty?.toLocaleString() || 'N/A'}
-            `.trim();
-            this.showNotification(details, 'info');
+            this.updateUrlParam('block', block.height);
+
+            const blockTime = new Date(block.timestamp * 1000);
+            const halvings = Math.floor(block.height / 210000);
+            const reward = (500 / Math.pow(2, halvings)).toFixed(8);
+
+            // Build transactions HTML
+            let txListHtml = '';
+            if (block.transactions && block.transactions.length > 0) {
+                txListHtml = block.transactions.map((tx, idx) => {
+                    const isCoinbase = tx.is_coinbase === 1;
+                    const fee = tx.fee ? (tx.fee / 100000000).toFixed(8) : '0.00000000';
+                    return `
+                        <div class="detail-tx-item" onclick="window.superAxeWeb.showTransactionDetails('${tx.txid}')">
+                            <div class="detail-tx-header">
+                                <span class="detail-tx-index">${isCoinbase ? 'Coinbase' : `#${idx}`}</span>
+                                <span class="detail-tx-hash">${tx.txid}</span>
+                            </div>
+                            <div class="detail-tx-meta">
+                                <span>Size: ${tx.size || tx.vsize || 0} bytes</span>
+                                <span>Fee: ${fee} AXE</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                txListHtml = '<div class="detail-empty">No transaction details available</div>';
+            }
+
+            const content = `
+                <div class="detail-header">
+                    <h2>Block #${block.height.toLocaleString()}</h2>
+                    <div class="detail-nav">
+                        ${block.height > 0 ? `<button class="detail-nav-btn" onclick="window.superAxeWeb.showBlockDetails(${block.height - 1})">← Previous</button>` : ''}
+                        <button class="detail-nav-btn" onclick="window.superAxeWeb.showBlockDetails(${block.height + 1})">Next →</button>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Block Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="detail-label">Hash</span>
+                            <span class="detail-value hash-value">${block.hash}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Previous Hash</span>
+                            <span class="detail-value hash-value clickable" onclick="window.superAxeWeb.showBlockDetails('${block.prev_hash}')">${block.prev_hash}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Timestamp</span>
+                            <span class="detail-value">${blockTime.toLocaleString()} (${this.formatTime(blockTime)})</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Transactions</span>
+                            <span class="detail-value">${block.tx_count || block.transactions?.length || 0}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Block Reward</span>
+                            <span class="detail-value highlight">${reward} AXE</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Difficulty</span>
+                            <span class="detail-value">${block.difficulty?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Size</span>
+                            <span class="detail-value">${(block.size / 1024).toFixed(2)} KB (${block.weight?.toLocaleString() || 0} weight units)</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Nonce</span>
+                            <span class="detail-value">${block.nonce?.toLocaleString() || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Merkle Root</span>
+                            <span class="detail-value hash-value">${block.merkle_root || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Version</span>
+                            <span class="detail-value">${block.version ? '0x' + block.version.toString(16) : 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Transactions (${block.transactions?.length || 0})</h3>
+                    <div class="detail-tx-list">
+                        ${txListHtml}
+                    </div>
+                </div>
+
+                <div class="detail-share">
+                    <span>Share: </span>
+                    <input type="text" readonly value="${window.location.origin}?block=${block.height}" onclick="this.select(); document.execCommand('copy'); window.superAxeWeb.showNotification('Link copied!', 'success');">
+                </div>
+            `;
+
+            this.openDetailModal(content);
         } catch (error) {
-            this.showNotification('Failed to load block details', 'error');
+            console.error('Block detail error:', error);
+            this.openDetailModal('<div class="detail-error">Failed to load block details. Block may not exist.</div>');
         }
     }
 
@@ -463,17 +627,170 @@ Difficulty: ${block.difficulty?.toLocaleString() || 'N/A'}
             return;
         }
 
+        // Show loading state
+        this.openDetailModal('<div class="detail-loading">Loading transaction details...</div>');
+
         try {
             const tx = await this.apiCall(`/api/tx/${txid}`);
-            const details = `
-Transaction: ${tx.txid.substring(0, 20)}...
-Block: ${tx.block_height || 'Pending'}
-Size: ${tx.size || tx.vsize || 0} bytes
-Fee: ${tx.fee ? (tx.fee / 100000000).toFixed(8) : '0'} AXE
-            `.trim();
-            this.showNotification(details, 'info');
+            this.updateUrlParam('tx', txid);
+
+            const isCoinbase = tx.is_coinbase === 1;
+            const fee = tx.fee ? (tx.fee / 100000000).toFixed(8) : '0.00000000';
+            const blockTime = tx.timestamp ? new Date(tx.timestamp * 1000) : null;
+
+            // Build inputs HTML
+            let inputsHtml = '';
+            if (isCoinbase) {
+                inputsHtml = `
+                    <div class="detail-io-item coinbase">
+                        <div class="detail-io-label">Coinbase (New coins)</div>
+                        <div class="detail-io-value">Block reward for mining block #${tx.block_height}</div>
+                    </div>
+                `;
+            } else if (tx.inputs && tx.inputs.length > 0) {
+                inputsHtml = tx.inputs.map(input => `
+                    <div class="detail-io-item">
+                        <div class="detail-io-address clickable" onclick="window.superAxeWeb.showAddressDetails('${input.address}')">${input.address || 'Unknown'}</div>
+                        <div class="detail-io-amount">${input.value ? (input.value / 100000000).toFixed(8) : '?'} AXE</div>
+                    </div>
+                `).join('');
+            } else if (tx.vin) {
+                // RPC format
+                inputsHtml = tx.vin.map(input => {
+                    if (input.coinbase) {
+                        return `
+                            <div class="detail-io-item coinbase">
+                                <div class="detail-io-label">Coinbase</div>
+                                <div class="detail-io-value">Block reward</div>
+                            </div>
+                        `;
+                    }
+                    return `
+                        <div class="detail-io-item">
+                            <div class="detail-io-txid">${input.txid?.substring(0, 16)}...:${input.vout}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                inputsHtml = '<div class="detail-empty">No input data available</div>';
+            }
+
+            // Build outputs HTML
+            let outputsHtml = '';
+            let totalOutput = 0;
+            const outputs = tx.outputs || tx.vout || [];
+
+            if (outputs.length > 0) {
+                outputsHtml = outputs.map((output, idx) => {
+                    let address = output.address;
+                    let value = output.value;
+
+                    // Handle RPC format
+                    if (!address && output.scriptPubKey?.address) {
+                        address = output.scriptPubKey.address;
+                    }
+                    if (value === undefined && output.value !== undefined) {
+                        value = output.value * 100000000; // Convert from BTC to satoshis
+                    }
+
+                    const valueAXE = value ? (value / 100000000).toFixed(8) : '0.00000000';
+                    totalOutput += value || 0;
+
+                    // Check if OP_RETURN (null data)
+                    const isOpReturn = !address && output.script_pubkey?.startsWith('6a');
+
+                    if (isOpReturn) {
+                        return `
+                            <div class="detail-io-item op-return">
+                                <div class="detail-io-label">OP_RETURN</div>
+                                <div class="detail-io-amount">0 AXE</div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="detail-io-item">
+                            <div class="detail-io-index">#${idx}</div>
+                            <div class="detail-io-address ${address ? 'clickable' : ''}" ${address ? `onclick="window.superAxeWeb.showAddressDetails('${address}')"` : ''}>${address || 'Unable to decode'}</div>
+                            <div class="detail-io-amount">${valueAXE} AXE</div>
+                            ${output.spent_txid ? '<span class="spent-badge">Spent</span>' : '<span class="unspent-badge">Unspent</span>'}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                outputsHtml = '<div class="detail-empty">No output data available</div>';
+            }
+
+            const content = `
+                <div class="detail-header">
+                    <h2>Transaction Details</h2>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Overview</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="detail-label">Transaction ID</span>
+                            <span class="detail-value hash-value">${tx.txid}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">${tx.block_height ? `<span class="confirmed-badge">Confirmed</span> in block #${tx.block_height}` : '<span class="pending-badge">Pending</span>'}</span>
+                        </div>
+                        ${tx.block_height ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Block</span>
+                            <span class="detail-value clickable" onclick="window.superAxeWeb.showBlockDetails(${tx.block_height})">#${tx.block_height} (${tx.block_hash?.substring(0, 16)}...)</span>
+                        </div>
+                        ` : ''}
+                        ${blockTime ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Time</span>
+                            <span class="detail-value">${blockTime.toLocaleString()}</span>
+                        </div>
+                        ` : ''}
+                        <div class="detail-row">
+                            <span class="detail-label">Size</span>
+                            <span class="detail-value">${tx.size || 0} bytes (${tx.vsize || tx.size || 0} vbytes)</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Fee</span>
+                            <span class="detail-value">${fee} AXE ${tx.vsize ? `(${((tx.fee || 0) / (tx.vsize || 1)).toFixed(2)} sat/vB)` : ''}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Type</span>
+                            <span class="detail-value">${isCoinbase ? '<span class="coinbase-badge">Coinbase</span>' : 'Regular Transaction'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Inputs</h3>
+                    <div class="detail-io-list inputs">
+                        ${inputsHtml}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Outputs (${outputs.length})</h3>
+                    <div class="detail-io-list outputs">
+                        ${outputsHtml}
+                    </div>
+                    <div class="detail-io-total">
+                        Total Output: ${(totalOutput / 100000000).toFixed(8)} AXE
+                    </div>
+                </div>
+
+                <div class="detail-share">
+                    <span>Share: </span>
+                    <input type="text" readonly value="${window.location.origin}?tx=${txid}" onclick="this.select(); document.execCommand('copy'); window.superAxeWeb.showNotification('Link copied!', 'success');">
+                </div>
+            `;
+
+            this.openDetailModal(content);
         } catch (error) {
-            this.showNotification('Failed to load transaction details', 'error');
+            console.error('Transaction detail error:', error);
+            this.openDetailModal('<div class="detail-error">Failed to load transaction details. Transaction may not exist.</div>');
         }
     }
 
@@ -483,19 +800,113 @@ Fee: ${tx.fee ? (tx.fee / 100000000).toFixed(8) : '0'} AXE
             return;
         }
 
+        // Show loading state
+        this.openDetailModal('<div class="detail-loading">Loading address details...</div>');
+
         try {
             const info = await this.apiCall(`/api/address/${address}`);
+            this.updateUrlParam('address', address);
+
             const balance = (info.balance / 100000000).toFixed(8);
-            const details = `
-Address: ${address.substring(0, 20)}...
-Balance: ${balance} AXE
-Transactions: ${info.txCount || 0}
-Received: ${(info.received / 100000000).toFixed(8)} AXE
-Sent: ${(info.sent / 100000000).toFixed(8)} AXE
-            `.trim();
-            this.showNotification(details, 'info');
+            const received = (info.received / 100000000).toFixed(8);
+            const sent = (info.sent / 100000000).toFixed(8);
+
+            // Build transaction history HTML
+            let txHistoryHtml = '';
+            if (info.transactions && info.transactions.length > 0) {
+                txHistoryHtml = info.transactions.map(tx => {
+                    const valueAXE = (tx.value / 100000000).toFixed(8);
+                    const isInput = tx.is_input;
+                    const blockTime = tx.block_time ? new Date(tx.block_time * 1000).toLocaleString() : 'Pending';
+                    return `
+                        <div class="detail-tx-item" onclick="window.superAxeWeb.showTransactionDetails('${tx.txid}')">
+                            <div class="detail-tx-header">
+                                <span class="tx-direction ${isInput ? 'sent' : 'received'}">${isInput ? '↑ Sent' : '↓ Received'}</span>
+                                <span class="detail-tx-hash">${tx.txid}</span>
+                            </div>
+                            <div class="detail-tx-meta">
+                                <span>Block: ${tx.block_height || 'Pending'}</span>
+                                <span>${blockTime}</span>
+                                <span class="tx-amount ${isInput ? 'negative' : 'positive'}">${isInput ? '-' : '+'}${valueAXE} AXE</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                txHistoryHtml = '<div class="detail-empty">No transactions found for this address</div>';
+            }
+
+            // Build UTXOs HTML
+            let utxosHtml = '';
+            if (info.utxos && info.utxos.length > 0) {
+                utxosHtml = info.utxos.map(utxo => {
+                    const valueAXE = (utxo.value / 100000000).toFixed(8);
+                    return `
+                        <div class="detail-utxo-item" onclick="window.superAxeWeb.showTransactionDetails('${utxo.txid}')">
+                            <span class="utxo-txid">${utxo.txid.substring(0, 20)}...:${utxo.vout}</span>
+                            <span class="utxo-value">${valueAXE} AXE</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                utxosHtml = '<div class="detail-empty">No unspent outputs</div>';
+            }
+
+            const content = `
+                <div class="detail-header">
+                    <h2>Address Details</h2>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Summary</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="detail-label">Address</span>
+                            <span class="detail-value hash-value">${address}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Balance</span>
+                            <span class="detail-value highlight">${balance} AXE</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Received</span>
+                            <span class="detail-value positive">${received} AXE</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Sent</span>
+                            <span class="detail-value negative">${sent} AXE</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Transactions</span>
+                            <span class="detail-value">${info.txCount || info.transactions?.length || 0}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Unspent Outputs (${info.utxos?.length || 0})</h3>
+                    <div class="detail-utxo-list">
+                        ${utxosHtml}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Transaction History</h3>
+                    <div class="detail-tx-list">
+                        ${txHistoryHtml}
+                    </div>
+                </div>
+
+                <div class="detail-share">
+                    <span>Share: </span>
+                    <input type="text" readonly value="${window.location.origin}?address=${address}" onclick="this.select(); document.execCommand('copy'); window.superAxeWeb.showNotification('Link copied!', 'success');">
+                </div>
+            `;
+
+            this.openDetailModal(content);
         } catch (error) {
-            this.showNotification('Failed to load address details', 'error');
+            console.error('Address detail error:', error);
+            this.openDetailModal('<div class="detail-error">Failed to load address details.</div>');
         }
     }
 
