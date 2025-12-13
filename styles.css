@@ -1205,6 +1205,27 @@ section {
     font-weight: 700;
 }
 
+.wallet-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.wallet-btn-group .glass-btn {
+    width: 100%;
+    text-align: center;
+}
+
+.glass-btn.secondary {
+    background: var(--dark-3);
+    box-shadow: 4px 4px 0 var(--black-pure);
+}
+
+.glass-btn.secondary:hover {
+    background: var(--dark-1);
+    box-shadow: 6px 6px 0 var(--black-pure);
+}
+
 .wallet-interface {
     padding: 3rem;
     margin-top: 3rem;

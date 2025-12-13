@@ -136,6 +136,8 @@ class SuperAxeWeb {
         // Connect Wallet button removed - MetaMask doesn't work with Bitcoin-based chains
         document.getElementById('webWalletConnect')?.addEventListener('click', this.createWebWallet.bind(this));
         document.getElementById('createWebWalletBtn')?.addEventListener('click', this.createWebWallet.bind(this));
+        document.getElementById('importWalletBtn')?.addEventListener('click', () => this.importWalletFromFile());
+        document.getElementById('walletFileInput')?.addEventListener('change', (e) => this.handleWalletFileImport(e));
 
         // Wallet actions
         document.getElementById('sendBtn')?.addEventListener('click', () => this.showSendForm());
@@ -973,6 +975,68 @@ class SuperAxeWeb {
         } catch (error) {
             console.error('Wallet creation error:', error);
             this.showNotification('Failed to create wallet: ' + error.message, 'error');
+        } finally {
+            if (btn) { btn.textContent = originalText; btn.disabled = false; }
+        }
+    }
+
+    importWalletFromFile() {
+        // Trigger the hidden file input
+        document.getElementById('walletFileInput')?.click();
+    }
+
+    async handleWalletFileImport(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Reset file input so same file can be selected again
+        event.target.value = '';
+
+        const btn = document.getElementById('importWalletBtn');
+        const originalText = btn ? btn.textContent : '';
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            // Support both formats: privateKeyWIF (backup format) and wif (raw format)
+            const wif = data.privateKeyWIF || data.wif;
+            if (!wif) {
+                throw new Error('No private key found in file. Expected "privateKeyWIF" or "wif" field.');
+            }
+
+            // Ask for password to encrypt and store the wallet
+            const password = prompt('Create a password to encrypt this wallet:\n(This protects your imported wallet)');
+            if (!password) return;
+
+            const confirmPassword = prompt('Confirm your password:');
+            if (password !== confirmPassword) {
+                this.showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            if (btn) { btn.textContent = 'Importing...'; btn.disabled = true; }
+
+            // Import the wallet from WIF
+            const wallet = await this.axeWallet.importFromWIF(wif);
+
+            // Save encrypted to localStorage
+            await this.axeWallet.saveWallet(password);
+
+            this.walletConnected = true;
+            this.currentWalletAddress = wallet.address;
+
+            this.showWalletInterface(wallet.address, '0.00000000');
+            this.showNotification(`Wallet imported successfully!\nAddress: ${wallet.address}`, 'success');
+            await this.refreshWalletBalance();
+
+        } catch (error) {
+            console.error('Wallet import error:', error);
+            if (error instanceof SyntaxError) {
+                this.showNotification('Invalid file format. Please select a valid wallet backup JSON file.', 'error');
+            } else {
+                this.showNotification('Failed to import wallet: ' + error.message, 'error');
+            }
         } finally {
             if (btn) { btn.textContent = originalText; btn.disabled = false; }
         }

@@ -305,7 +305,11 @@
                             <span class="feature-tag">✓ Encrypted Storage</span>
                             <span class="feature-tag">✓ Send & Receive</span>
                         </div>
-                        <button class="wallet-download glass-btn" id="createWebWalletBtn">Create Web Wallet</button>
+                        <div class="wallet-btn-group">
+                            <button class="wallet-download glass-btn" id="createWebWalletBtn">Create Web Wallet</button>
+                            <button class="wallet-download glass-btn secondary" id="importWalletBtn">Import Wallet</button>
+                        </div>
+                        <input type="file" id="walletFileInput" accept=".json" style="display: none;">
                     </div>
                 </div>
 
