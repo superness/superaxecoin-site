@@ -3275,3 +3275,189 @@ html {
         gap: 0.5rem;
     }
 }
+
+/* ===========================================
+   WALLET ADDRESS DISPLAY
+   =========================================== */
+.wallet-addresses {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.address-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.address-label {
+    font-size: 0.75rem;
+    color: var(--white-50);
+    font-weight: 500;
+}
+
+.wallet-address {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--white-90);
+    background: var(--dark-3);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    word-break: break-all;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.wallet-address:hover {
+    border-color: var(--red-primary);
+    background: var(--dark-2);
+}
+
+.wallet-address.segwit {
+    color: var(--red-light);
+}
+
+/* ===========================================
+   ADDRESS CONVERTER
+   =========================================== */
+.converter-interface {
+    margin-top: 2rem;
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+.converter-header {
+    margin-bottom: 1.5rem;
+}
+
+.converter-header h3 {
+    color: var(--white);
+    margin-bottom: 0.5rem;
+}
+
+.converter-header p {
+    color: var(--white-70);
+    font-size: 0.9rem;
+}
+
+.converter-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.converter-input label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--white-70);
+    margin-bottom: 0.5rem;
+}
+
+.converter-input input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: var(--dark-3);
+    border: 1px solid var(--white-10);
+    border-radius: 8px;
+    color: var(--white);
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.converter-input input:focus {
+    outline: none;
+    border-color: var(--red-primary);
+}
+
+.convert-btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--red-primary), var(--red-dark));
+    border: none;
+    color: var(--white);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.convert-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(255, 59, 48, 0.3);
+}
+
+.converter-results {
+    background: var(--dark-3);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.result-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.result-row:last-child {
+    margin-bottom: 0;
+}
+
+.result-row label {
+    font-size: 0.8rem;
+    color: var(--white-50);
+    font-weight: 500;
+}
+
+.result-address {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--white);
+    background: var(--dark-2);
+    padding: 0.75rem;
+    border-radius: 6px;
+    word-break: break-all;
+    flex: 1;
+}
+
+.result-address.segwit {
+    color: var(--red-light);
+}
+
+.result-row .copy-btn {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+.converter-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: var(--white-70);
+}
+
+.converter-warning strong {
+    color: #ffc107;
+}
+
+#closeConverterBtn {
+    width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .converter-input {
+        flex-direction: column;
+    }
+
+    .wallet-address {
+        font-size: 0.75rem;
+    }
+}

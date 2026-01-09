@@ -165,6 +165,74 @@ class SuperAxeWallet {
     // Bech32 character set
     static BECH32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 
+    // Bech32 polymod for checksum calculation
+    bech32Polymod(values) {
+        const GEN = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+        let chk = 1;
+        for (const v of values) {
+            const top = chk >> 25;
+            chk = ((chk & 0x1ffffff) << 5) ^ v;
+            for (let i = 0; i < 5; i++) {
+                if ((top >> i) & 1) {
+                    chk ^= GEN[i];
+                }
+            }
+        }
+        return chk;
+    }
+
+    // Expand HRP for checksum
+    bech32HrpExpand(hrp) {
+        const ret = [];
+        for (const c of hrp) {
+            ret.push(c.charCodeAt(0) >> 5);
+        }
+        ret.push(0);
+        for (const c of hrp) {
+            ret.push(c.charCodeAt(0) & 31);
+        }
+        return ret;
+    }
+
+    // Create Bech32 checksum
+    bech32CreateChecksum(hrp, data) {
+        const values = [...this.bech32HrpExpand(hrp), ...data];
+        const polymod = this.bech32Polymod([...values, 0, 0, 0, 0, 0, 0]) ^ 1;
+        const checksum = [];
+        for (let i = 0; i < 6; i++) {
+            checksum.push((polymod >> (5 * (5 - i))) & 31);
+        }
+        return checksum;
+    }
+
+    // Bech32 encode
+    bech32Encode(hrp, data) {
+        const combined = [...data, ...this.bech32CreateChecksum(hrp, data)];
+        let result = hrp + '1';
+        for (const d of combined) {
+            result += SuperAxeWallet.BECH32_CHARSET[d];
+        }
+        return result;
+    }
+
+    // Convert public key to Bech32 (P2WPKH) address
+    publicKeyToBech32Address(publicKey) {
+        // SHA256 of public key
+        const sha256Hash = this.sha256(publicKey);
+
+        // RIPEMD160 of SHA256 hash (witness program)
+        const witnessProgram = this.ripemd160(sha256Hash);
+
+        // Convert 8-bit to 5-bit groups
+        const data5bit = this.convertBits(Array.from(witnessProgram), 8, 5, true);
+
+        // Prepend witness version (0 for P2WPKH)
+        const fullData = [0, ...data5bit];
+
+        // Encode with HRP
+        return this.bech32Encode(this.network.bech32, fullData);
+    }
+
     // Bech32 decode
     bech32Decode(str) {
         str = str.toLowerCase();
@@ -234,8 +302,11 @@ class SuperAxeWallet {
         // Derive public key using secp256k1
         const publicKey = this.derivePublicKey(privateKey);
 
-        // Derive address from public key
+        // Derive legacy address from public key
         const address = this.publicKeyToAddress(publicKey);
+
+        // Derive Bech32 (SegWit) address from public key
+        const segwitAddress = this.publicKeyToBech32Address(publicKey);
 
         // Create WIF (Wallet Import Format) for private key
         const wif = this.privateKeyToWIF(privateKey);
@@ -244,6 +315,7 @@ class SuperAxeWallet {
             privateKey: privateKey,
             publicKey: publicKey,
             address: address,
+            segwitAddress: segwitAddress,
             wif: wif
         };
 
@@ -303,11 +375,13 @@ class SuperAxeWallet {
 
         const publicKey = this.derivePublicKey(privateKey);
         const address = this.publicKeyToAddress(publicKey);
+        const segwitAddress = this.publicKeyToBech32Address(publicKey);
 
         this.wallet = {
             privateKey: privateKey,
             publicKey: publicKey,
             address: address,
+            segwitAddress: segwitAddress,
             wif: wif
         };
 
@@ -691,6 +765,32 @@ class SuperAxeWallet {
             { name: 'AES-GCM', iv }, key, data
         );
         return new TextDecoder().decode(decrypted);
+    }
+
+    // Convert WIF to both address formats (without storing in wallet)
+    // Useful for address conversion tool
+    convertWIFToAddresses(wif) {
+        const decoded = this.base58CheckDecode(wif);
+
+        if (decoded.version !== this.network.wif) {
+            throw new Error('Invalid WIF version. Expected SuperAxeCoin mainnet WIF.');
+        }
+
+        // Remove compression flag if present
+        let privateKey = decoded.payload;
+        if (privateKey.length === 33 && privateKey[32] === 0x01) {
+            privateKey = privateKey.slice(0, 32);
+        }
+
+        const publicKey = this.derivePublicKey(privateKey);
+        const legacyAddress = this.publicKeyToAddress(publicKey);
+        const segwitAddress = this.publicKeyToBech32Address(publicKey);
+
+        return {
+            legacy: legacyAddress,
+            segwit: segwitAddress,
+            publicKeyHex: this.bytesToHex(publicKey)
+        };
     }
 
 }

@@ -311,12 +311,67 @@
                         </div>
                         <input type="file" id="walletFileInput" accept=".json" style="display: none;">
                     </div>
+
+                    <div class="wallet-card glass">
+                        <h3>Address Converter</h3>
+                        <p>Convert your legacy address (S...) to SegWit format (axe1...). Enter your WIF private key to derive both address formats.</p>
+                        <div class="wallet-features">
+                            <span class="feature-tag">✓ Legacy to SegWit</span>
+                            <span class="feature-tag">✓ Client-side Only</span>
+                            <span class="feature-tag">✓ No Data Sent</span>
+                        </div>
+                        <button class="wallet-download glass-btn" id="openConverterBtn">Open Converter</button>
+                    </div>
+                </div>
+
+                <!-- Address Converter Interface -->
+                <div class="converter-interface glass" id="converterInterface" style="display: none;">
+                    <div class="converter-header">
+                        <h3>Address Format Converter</h3>
+                        <p>Enter your WIF private key to see both legacy and SegWit addresses. Your key never leaves your browser.</p>
+                    </div>
+
+                    <div class="converter-input">
+                        <label for="wifInput">WIF Private Key:</label>
+                        <input type="password" id="wifInput" placeholder="Enter your WIF private key (starts with c or L/K)">
+                        <button class="glass-btn" id="toggleWifVisibility">Show</button>
+                    </div>
+
+                    <button class="glass-btn convert-btn" id="convertAddressBtn">Convert</button>
+
+                    <div class="converter-results" id="converterResults" style="display: none;">
+                        <div class="result-row">
+                            <label>Legacy Address (S...):</label>
+                            <div class="result-address" id="resultLegacyAddress">-</div>
+                            <button class="copy-btn glass-btn" data-copy="resultLegacyAddress">Copy</button>
+                        </div>
+                        <div class="result-row">
+                            <label>SegWit Address (axe1...):</label>
+                            <div class="result-address segwit" id="resultSegwitAddress">-</div>
+                            <button class="copy-btn glass-btn" data-copy="resultSegwitAddress">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="converter-warning">
+                        <strong>Security Note:</strong> This conversion happens entirely in your browser. Your private key is never sent anywhere. However, always be cautious when entering private keys on any website.
+                    </div>
+
+                    <button class="glass-btn secondary" id="closeConverterBtn">Close Converter</button>
                 </div>
 
                 <div class="wallet-interface glass" id="walletInterface" style="display: none;">
                     <div class="wallet-header">
                         <h3>Your SuperAxeCoin Wallet</h3>
-                        <div class="wallet-address" id="walletAddress">Not Connected</div>
+                        <div class="wallet-addresses">
+                            <div class="address-row">
+                                <span class="address-label">Legacy (S...):</span>
+                                <div class="wallet-address" id="walletAddress">Not Connected</div>
+                            </div>
+                            <div class="address-row">
+                                <span class="address-label">SegWit (axe1...):</span>
+                                <div class="wallet-address segwit" id="walletSegwitAddress">Not Connected</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="wallet-balance">

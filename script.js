@@ -145,6 +145,24 @@ class SuperAxeWeb {
         document.getElementById('historyBtn')?.addEventListener('click', () => this.showTransactionHistory());
         document.getElementById('confirmSend')?.addEventListener('click', () => this.sendTransaction());
 
+        // Address converter
+        document.getElementById('openConverterBtn')?.addEventListener('click', () => this.openConverter());
+        document.getElementById('closeConverterBtn')?.addEventListener('click', () => this.closeConverter());
+        document.getElementById('convertAddressBtn')?.addEventListener('click', () => this.convertAddress());
+        document.getElementById('toggleWifVisibility')?.addEventListener('click', () => this.toggleWifVisibility());
+
+        // Copy buttons for converter results
+        document.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.copy;
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    navigator.clipboard.writeText(targetEl.textContent);
+                    this.showNotification('Address copied!', 'success');
+                }
+            });
+        });
+
         // Explorer search
         document.getElementById('searchBtn')?.addEventListener('click', this.performSearch.bind(this));
         document.getElementById('explorerSearch')?.addEventListener('keypress', (e) => {
@@ -1070,8 +1088,12 @@ class SuperAxeWeb {
 
                     <div class="wallet-info-box">
                         <div class="info-row">
-                            <label>Your Address:</label>
+                            <label>Legacy Address (S...):</label>
                             <code class="address-display">${wallet.address}</code>
+                        </div>
+                        <div class="info-row">
+                            <label>SegWit Address (axe1...):</label>
+                            <code class="address-display segwit">${wallet.segwitAddress}</code>
                         </div>
                         <div class="info-row">
                             <label>Private Key (WIF):</label>
@@ -1140,10 +1162,29 @@ class SuperAxeWeb {
     showWalletInterface(address, balance) {
         const walletInterface = document.getElementById('walletInterface');
         const addressElement = document.getElementById('walletAddress');
+        const segwitAddressElement = document.getElementById('walletSegwitAddress');
         const balanceElement = document.getElementById('walletBalance');
 
         if (walletInterface) walletInterface.style.display = 'block';
-        if (addressElement) addressElement.textContent = address.substring(0, 20) + '...';
+        if (addressElement) {
+            addressElement.textContent = address;
+            addressElement.title = address;
+            addressElement.style.cursor = 'pointer';
+            addressElement.onclick = () => {
+                navigator.clipboard.writeText(address);
+                this.showNotification('Legacy address copied!', 'success');
+            };
+        }
+        if (segwitAddressElement && this.axeWallet.wallet?.segwitAddress) {
+            const segwitAddr = this.axeWallet.wallet.segwitAddress;
+            segwitAddressElement.textContent = segwitAddr;
+            segwitAddressElement.title = segwitAddr;
+            segwitAddressElement.style.cursor = 'pointer';
+            segwitAddressElement.onclick = () => {
+                navigator.clipboard.writeText(segwitAddr);
+                this.showNotification('SegWit address copied!', 'success');
+            };
+        }
         if (balanceElement) balanceElement.textContent = balance;
     }
 
@@ -1295,6 +1336,66 @@ class SuperAxeWeb {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
+        }
+    }
+
+    // Address Converter Methods
+    openConverter() {
+        const converterInterface = document.getElementById('converterInterface');
+        if (converterInterface) {
+            converterInterface.style.display = 'block';
+            // Scroll to converter
+            converterInterface.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    closeConverter() {
+        const converterInterface = document.getElementById('converterInterface');
+        const wifInput = document.getElementById('wifInput');
+        const results = document.getElementById('converterResults');
+
+        if (converterInterface) converterInterface.style.display = 'none';
+        if (wifInput) wifInput.value = '';
+        if (results) results.style.display = 'none';
+    }
+
+    toggleWifVisibility() {
+        const wifInput = document.getElementById('wifInput');
+        const toggleBtn = document.getElementById('toggleWifVisibility');
+
+        if (wifInput && toggleBtn) {
+            if (wifInput.type === 'password') {
+                wifInput.type = 'text';
+                toggleBtn.textContent = 'Hide';
+            } else {
+                wifInput.type = 'password';
+                toggleBtn.textContent = 'Show';
+            }
+        }
+    }
+
+    convertAddress() {
+        const wifInput = document.getElementById('wifInput');
+        const resultsDiv = document.getElementById('converterResults');
+        const legacyResult = document.getElementById('resultLegacyAddress');
+        const segwitResult = document.getElementById('resultSegwitAddress');
+
+        if (!wifInput?.value?.trim()) {
+            this.showNotification('Please enter a WIF private key', 'warning');
+            return;
+        }
+
+        try {
+            const addresses = this.axeWallet.convertWIFToAddresses(wifInput.value.trim());
+
+            if (legacyResult) legacyResult.textContent = addresses.legacy;
+            if (segwitResult) segwitResult.textContent = addresses.segwit;
+            if (resultsDiv) resultsDiv.style.display = 'block';
+
+            this.showNotification('Addresses derived successfully!', 'success');
+        } catch (error) {
+            console.error('Conversion error:', error);
+            this.showNotification('Invalid WIF: ' + error.message, 'error');
         }
     }
 
