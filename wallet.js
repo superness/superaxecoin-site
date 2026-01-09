@@ -495,7 +495,9 @@ class SuperAxeWallet {
                 txid: utxo.txid,
                 vout: utxo.vout,
                 value: utxo.value,
-                scriptPubKey: utxo.scriptPubKey
+                scriptPubKey: utxo.script_pubkey || utxo.scriptPubKey,
+                addressType: utxo.addressType || 'legacy',
+                address: utxo.address
             });
             totalInput += utxo.value;
 
@@ -528,91 +530,79 @@ class SuperAxeWallet {
 
     // Build and serialize transaction
     async buildTransaction(inputs, outputs) {
-        // Transaction structure
-        let tx = [];
+        // Check if we have any SegWit inputs
+        const hasSegwitInputs = inputs.some(input => input.addressType === 'segwit');
 
-        // Version (4 bytes, little endian)
-        tx.push(...this.intToLE(1, 4));
-
-        // Input count (varint)
-        tx.push(...this.varint(inputs.length));
-
-        // Inputs
-        for (const input of inputs) {
-            // Previous txid (32 bytes, reversed)
-            tx.push(...this.hexToBytes(input.txid).reverse());
-            // Previous vout (4 bytes, LE)
-            tx.push(...this.intToLE(input.vout, 4));
-            // ScriptSig placeholder (will be replaced when signing)
-            tx.push(0x00); // Empty for now
-            // Sequence (4 bytes)
-            tx.push(...this.intToLE(0xffffffff, 4));
-        }
-
-        // Output count
-        tx.push(...this.varint(outputs.length));
-
-        // Outputs
-        for (const output of outputs) {
-            // Value (8 bytes, LE)
-            tx.push(...this.intToLE(output.value, 8));
-            // ScriptPubKey
-            const scriptPubKey = this.addressToScriptPubKey(output.address);
-            tx.push(...this.varint(scriptPubKey.length));
-            tx.push(...scriptPubKey);
-        }
-
-        // Locktime (4 bytes)
-        tx.push(...this.intToLE(0, 4));
-
-        // Now sign each input
-        const signedTx = await this.signTransaction(new Uint8Array(tx), inputs, outputs);
+        // Sign inputs and build transaction
+        const signedTx = await this.signTransaction(inputs, outputs, hasSegwitInputs);
 
         return this.bytesToHex(signedTx);
     }
 
-    // Sign transaction inputs
-    async signTransaction(txTemplate, inputs, outputs) {
+    // Sign transaction inputs (supports both legacy and SegWit)
+    async signTransaction(inputs, outputs, hasSegwitInputs) {
         const ec = new elliptic.ec('secp256k1');
         const keyPair = ec.keyFromPrivate(this.wallet.privateKey);
 
-        let signedInputs = [];
+        // Prepare signatures and witness data
+        let scriptSigs = [];
+        let witnesses = [];
 
         for (let i = 0; i < inputs.length; i++) {
-            // Create signing hash for this input
-            const sigHash = await this.createSigHash(txTemplate, i, inputs[i], outputs);
+            const input = inputs[i];
 
-            // Sign with private key
-            const signature = keyPair.sign(sigHash, { canonical: true });
-            const derSig = signature.toDER();
+            if (input.addressType === 'segwit') {
+                // SegWit P2WPKH signing using BIP143
+                const sigHash = await this.createBIP143SigHash(inputs, outputs, i, input.value);
 
-            // Add SIGHASH_ALL byte
-            const sigWithHashType = new Uint8Array([...derSig, 0x01]);
+                const signature = keyPair.sign(sigHash, { canonical: true });
+                const derSig = signature.toDER();
+                const sigWithHashType = new Uint8Array([...derSig, 0x01]);
 
-            // Create scriptSig: <sig> <pubkey>
-            const scriptSig = new Uint8Array([
-                sigWithHashType.length, ...sigWithHashType,
-                this.wallet.publicKey.length, ...this.wallet.publicKey
-            ]);
+                // SegWit: scriptSig is empty, signature goes in witness
+                scriptSigs.push(new Uint8Array([]));
+                witnesses.push({
+                    items: [sigWithHashType, this.wallet.publicKey]
+                });
+            } else {
+                // Legacy P2PKH signing
+                const sigHash = await this.createLegacySigHash(inputs, outputs, i);
 
-            signedInputs.push(scriptSig);
+                const signature = keyPair.sign(sigHash, { canonical: true });
+                const derSig = signature.toDER();
+                const sigWithHashType = new Uint8Array([...derSig, 0x01]);
+
+                // Legacy: signature in scriptSig
+                const scriptSig = new Uint8Array([
+                    sigWithHashType.length, ...sigWithHashType,
+                    this.wallet.publicKey.length, ...this.wallet.publicKey
+                ]);
+                scriptSigs.push(scriptSig);
+                witnesses.push({ items: [] }); // Empty witness for legacy
+            }
         }
 
-        // Rebuild transaction with signatures
+        // Build final transaction
         let tx = [];
 
-        // Version
+        // Version (4 bytes)
         tx.push(...this.intToLE(1, 4));
+
+        // SegWit marker and flag (if any SegWit inputs)
+        if (hasSegwitInputs) {
+            tx.push(0x00); // Marker
+            tx.push(0x01); // Flag
+        }
 
         // Input count
         tx.push(...this.varint(inputs.length));
 
-        // Inputs with signatures
+        // Inputs
         for (let i = 0; i < inputs.length; i++) {
             tx.push(...this.hexToBytes(inputs[i].txid).reverse());
             tx.push(...this.intToLE(inputs[i].vout, 4));
-            tx.push(...this.varint(signedInputs[i].length));
-            tx.push(...signedInputs[i]);
+            tx.push(...this.varint(scriptSigs[i].length));
+            tx.push(...scriptSigs[i]);
             tx.push(...this.intToLE(0xffffffff, 4));
         }
 
@@ -625,6 +615,17 @@ class SuperAxeWallet {
             const scriptPubKey = this.addressToScriptPubKey(output.address);
             tx.push(...this.varint(scriptPubKey.length));
             tx.push(...scriptPubKey);
+        }
+
+        // Witness data (if any SegWit inputs)
+        if (hasSegwitInputs) {
+            for (const witness of witnesses) {
+                tx.push(...this.varint(witness.items.length));
+                for (const item of witness.items) {
+                    tx.push(...this.varint(item.length));
+                    tx.push(...item);
+                }
+            }
         }
 
         // Locktime
@@ -633,32 +634,72 @@ class SuperAxeWallet {
         return new Uint8Array(tx);
     }
 
-    // Create signature hash for input
-    async createSigHash(txTemplate, inputIndex, input, outputs) {
-        // Simplified SIGHASH_ALL implementation
+    // BIP143 sighash for SegWit inputs
+    async createBIP143SigHash(inputs, outputs, inputIndex, inputValue) {
+        // hashPrevouts
+        let prevouts = [];
+        for (const input of inputs) {
+            prevouts.push(...this.hexToBytes(input.txid).reverse());
+            prevouts.push(...this.intToLE(input.vout, 4));
+        }
+        const hashPrevouts = await this.hash256(new Uint8Array(prevouts));
+
+        // hashSequence
+        let sequences = [];
+        for (const input of inputs) {
+            sequences.push(...this.intToLE(0xffffffff, 4));
+        }
+        const hashSequence = await this.hash256(new Uint8Array(sequences));
+
+        // hashOutputs
+        let outputsData = [];
+        for (const output of outputs) {
+            outputsData.push(...this.intToLE(output.value, 8));
+            const scriptPubKey = this.addressToScriptPubKey(output.address);
+            outputsData.push(...this.varint(scriptPubKey.length));
+            outputsData.push(...scriptPubKey);
+        }
+        const hashOutputs = await this.hash256(new Uint8Array(outputsData));
+
+        // scriptCode for P2WPKH (OP_DUP OP_HASH160 <20-byte-pubkey-hash> OP_EQUALVERIFY OP_CHECKSIG)
+        const pubKeyHash = this.ripemd160(this.sha256(this.wallet.publicKey));
+        const scriptCode = new Uint8Array([0x19, 0x76, 0xa9, 0x14, ...pubKeyHash, 0x88, 0xac]);
+
+        // Build preimage
+        let preimage = [];
+        preimage.push(...this.intToLE(1, 4)); // nVersion
+        preimage.push(...hashPrevouts);
+        preimage.push(...hashSequence);
+        preimage.push(...this.hexToBytes(inputs[inputIndex].txid).reverse()); // outpoint
+        preimage.push(...this.intToLE(inputs[inputIndex].vout, 4));
+        preimage.push(...scriptCode); // scriptCode
+        preimage.push(...this.intToLE(inputValue, 8)); // amount
+        preimage.push(...this.intToLE(0xffffffff, 4)); // nSequence
+        preimage.push(...hashOutputs);
+        preimage.push(...this.intToLE(0, 4)); // nLocktime
+        preimage.push(...this.intToLE(1, 4)); // sighash type (SIGHASH_ALL)
+
+        return await this.hash256(new Uint8Array(preimage));
+    }
+
+    // Legacy sighash for P2PKH inputs
+    async createLegacySigHash(inputs, outputs, inputIndex) {
         let tx = [];
 
         // Version
         tx.push(...this.intToLE(1, 4));
 
-        // Parse original inputs from template
-        let pos = 4;
-        const inputCount = txTemplate[pos];
-        pos++;
+        // Input count
+        tx.push(...this.varint(inputs.length));
 
-        tx.push(...this.varint(inputCount));
+        // Inputs
+        for (let i = 0; i < inputs.length; i++) {
+            tx.push(...this.hexToBytes(inputs[i].txid).reverse());
+            tx.push(...this.intToLE(inputs[i].vout, 4));
 
-        for (let i = 0; i < inputCount; i++) {
-            // txid (32 bytes)
-            tx.push(...txTemplate.slice(pos, pos + 32));
-            pos += 32;
-            // vout (4 bytes)
-            tx.push(...txTemplate.slice(pos, pos + 4));
-            pos += 4;
-
-            // scriptSig - use scriptPubKey for input being signed, empty for others
+            // scriptSig - use P2PKH script for input being signed, empty for others
             if (i === inputIndex) {
-                const pubKeyHash = (await this.base58CheckDecode(this.wallet.address)).payload;
+                const pubKeyHash = this.ripemd160(this.sha256(this.wallet.publicKey));
                 const script = [0x76, 0xa9, 0x14, ...pubKeyHash, 0x88, 0xac];
                 tx.push(...this.varint(script.length));
                 tx.push(...script);
@@ -666,13 +707,7 @@ class SuperAxeWallet {
                 tx.push(0x00);
             }
 
-            // Skip original scriptSig
-            const scriptLen = txTemplate[pos];
-            pos += 1 + scriptLen;
-
-            // sequence (4 bytes)
-            tx.push(...txTemplate.slice(pos, pos + 4));
-            pos += 4;
+            tx.push(...this.intToLE(0xffffffff, 4));
         }
 
         // Output count
@@ -692,7 +727,6 @@ class SuperAxeWallet {
         // SIGHASH_ALL
         tx.push(...this.intToLE(1, 4));
 
-        // Double SHA256
         return await this.hash256(new Uint8Array(tx));
     }
 
