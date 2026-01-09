@@ -396,6 +396,40 @@ class SuperAxeWallet {
         return data.balance / 100000000; // Convert satoshis to AXE
     }
 
+    // Get combined balance from both legacy and SegWit addresses
+    async getCombinedBalance() {
+        if (!this.wallet) throw new Error('No wallet loaded');
+
+        let totalBalance = 0;
+
+        // Fetch legacy address balance
+        try {
+            const legacyResponse = await fetch(`${this.API_URL}/api/address/${this.wallet.address}/balance`);
+            if (legacyResponse.ok) {
+                const legacyData = await legacyResponse.json();
+                totalBalance += legacyData.balance || 0;
+            }
+        } catch (e) {
+            console.warn('Failed to fetch legacy balance:', e);
+        }
+
+        // Fetch SegWit address balance
+        try {
+            const segwitResponse = await fetch(`${this.API_URL}/api/address/${this.wallet.segwitAddress}/balance`);
+            if (segwitResponse.ok) {
+                const segwitData = await segwitResponse.json();
+                totalBalance += segwitData.balance || 0;
+            }
+        } catch (e) {
+            console.warn('Failed to fetch SegWit balance:', e);
+        }
+
+        return {
+            total: totalBalance / 100000000,
+            totalSats: totalBalance
+        };
+    }
+
     // Get UTXOs from API
     async getUTXOs(address) {
         const response = await fetch(`${this.API_URL}/api/address/${address || this.wallet?.address}/utxos`);
@@ -403,12 +437,54 @@ class SuperAxeWallet {
         return await response.json();
     }
 
+    // Get combined UTXOs from both legacy and SegWit addresses
+    async getAllUTXOs() {
+        if (!this.wallet) throw new Error('No wallet loaded');
+
+        let allUtxos = [];
+
+        // Fetch legacy address UTXOs
+        try {
+            const legacyResponse = await fetch(`${this.API_URL}/api/address/${this.wallet.address}/utxos`);
+            if (legacyResponse.ok) {
+                const legacyUtxos = await legacyResponse.json();
+                // Mark each UTXO with its address type
+                legacyUtxos.forEach(utxo => {
+                    utxo.addressType = 'legacy';
+                    utxo.address = this.wallet.address;
+                });
+                allUtxos = allUtxos.concat(legacyUtxos);
+            }
+        } catch (e) {
+            console.warn('Failed to fetch legacy UTXOs:', e);
+        }
+
+        // Fetch SegWit address UTXOs
+        try {
+            const segwitResponse = await fetch(`${this.API_URL}/api/address/${this.wallet.segwitAddress}/utxos`);
+            if (segwitResponse.ok) {
+                const segwitUtxos = await segwitResponse.json();
+                // Mark each UTXO with its address type
+                segwitUtxos.forEach(utxo => {
+                    utxo.addressType = 'segwit';
+                    utxo.address = this.wallet.segwitAddress;
+                });
+                allUtxos = allUtxos.concat(segwitUtxos);
+            }
+        } catch (e) {
+            console.warn('Failed to fetch SegWit UTXOs:', e);
+        }
+
+        return allUtxos;
+    }
+
     // Create and sign a transaction
     async createTransaction(toAddress, amount, feeRate = 1) {
         if (!this.wallet) throw new Error('No wallet loaded');
 
         const amountSats = Math.floor(amount * 100000000);
-        const utxos = await this.getUTXOs();
+        // Get UTXOs from both legacy and SegWit addresses
+        const utxos = await this.getAllUTXOs();
 
         // Select UTXOs (simple: use all)
         let totalInput = 0;

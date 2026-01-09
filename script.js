@@ -1061,11 +1061,12 @@ class SuperAxeWeb {
     }
 
     async refreshWalletBalance() {
-        if (!this.currentWalletAddress || !this.apiAvailable) return;
+        if (!this.axeWallet.wallet || !this.apiAvailable) return;
 
         try {
-            const info = await this.apiCall(`/api/address/${this.currentWalletAddress}/balance`);
-            const balance = (info.balance / 100000000).toFixed(8);
+            // Get combined balance from both legacy and SegWit addresses
+            const balanceInfo = await this.axeWallet.getCombinedBalance();
+            const balance = balanceInfo.total.toFixed(8);
 
             const balanceElement = document.getElementById('walletBalance');
             if (balanceElement) {
@@ -1073,6 +1074,7 @@ class SuperAxeWeb {
             }
         } catch (error) {
             // Address doesn't exist yet, balance is 0
+            console.warn('Failed to refresh balance:', error);
         }
     }
 
